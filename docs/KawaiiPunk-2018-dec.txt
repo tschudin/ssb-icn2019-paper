@@ -1,0 +1,51 @@
+# Criticisms of Scuttlebutt
+
+## Content warning: negativity, community safety
+
+## Like a seed yet to sprout
+
+To be honest I am spending more time on Mastodon currently. It just feels like it is moving forward a lot more quickly than #ssb. Both #Patchwork and #Patchbay have been pretty buggy for me and #patchbay have serious issues in new versions. 
+
+I also think that we are heading for a really rough time in the Scuttleverse as the community grows. I'm not at all confident that we have the moderation tools in place to handle a massive influx of users, a minority of whom will either consciously or unconsciously cause a bunch of trouble.
+
+I don't really feel safe in the fact that a bunch of what I consider highly necessary features to protect scuttler's from have not been implemented, despite being discussed for years. 
+
+## The question is, is this just going to be a conceptual technology or an accessible technology?
+
+At the moment, I don't feel like I can recommend SSB to my friends who aren't highly technical and understand the network conceptually. On Mastodon, my instance Sunbeam.city is a very tight knit community. We have each other's back and we have already practised community self defence against harassers, fascists, pedophiles etc. We have the moderation tools to deal with these attackers (from a threat modelling perspective) and we use them to create a safe environment for our fellow tooters.
+
+In my mind Scuttlebutt is completely untested in these regards. It is only a matter of time till some bad shit happens and we aren't ready for it. Frankly, I know we are woefully ill prepared and it makes me feel unsafe.
+
+## Features, Features, Features
+
+Here are some of the features I think we need to implement in either the protocol or the clients. Note that there is no point having these features in the protocol but not implemented in the client because that is what 99% of people will use.
+
+* Content warnings
+* Selectable hop distances in clients
+* A more stable client experiance
+* Hiding content you don't want to see
+* Deleting content you don't want to see locally
+* Muting users
+* Being able to block a pub and everyone connected to it (similar to a instance domain mute on Masto)
+* Posting to only people you follow
+* Posting to only people on a certain list
+* Seeing content only from people on a certain list
+* Image captions for the visually impaired
+* A way to report a scuttler's bad behaviour to your friends with evidence
+* A way to select my actual locale (en-gb) instead of `merican English
+* A way to route Scuttlebutt through Tor in the client's UI
+* A integrated way to encrypt your local .ssb data
+* Ability to automatically scrub metadata from your posts (e.g. EXIF data in photos)
+* Being able to lock down your account so people who want to follow you need to be approved
+* A way to prevent your posts being indexed by malicious crawlers (meta issue)
+
+## In Summary 
+I hope this will provoke some some good discussion. I really don't think we are moving fast enough with some of these ideas. I would say all of these proposed features are pretty reasonable expectations from a social perspective but perhaps are technically difficult to implement. 
+
+If you are about to bluster into this thread with some crap about "oh I am fine with things how they are" please consider that some people face different risks to you and are vulnerable in ways that you aren't. 
+
+If the #handshake-council #buttcouncil have money, then I propose they consider paying people to implement some of these requests before it is too late and our beautiful Scuttleverse runs into trouble.
+
+
+Ref: %k8eJWwAdR/Ai2g9W63C5Ux1L55KYW3Z/qfTt42giJjA=.sha256
+See also Rabble in %NWz4aeAnnBhoxJj5UvIPGdpv72UNcr3aHoPvH02dw3U=.sha256
