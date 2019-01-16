@@ -234,24 +234,59 @@ envelope and payload, hashchain entry, JSON
 % ----------------------------------------------------------------------
 \section{Distributed Apps and Data Structures over SSB}
 
-\subsection{Example SSB app: about}
+\subsection{Example: SSB's user directory}
 
-``about'' = a simple directory app / each peer is represented as a set
-of key-value bindings / the log entries capture the updates to these
-bindings
+``about'' is SSB's user database i.e., an application that associates
+cryptographic IDs with (typically) human-readable attributes. A single
+log entry format has been defined to this end:
+{\small\begin{verbatim}
+'content': {
+  'type'  : 'about',
+  'about' : target_id,
+  attr_name : attr_value   // multiple times
+}
+\end{verbatim}}
 
-\ \\
-\centerline{simple fig here}
-\ \\
+\noindent
+If the author of such an entry has the same ID as {\small\tt
+  target\_id}, the attributes are self-chosen. If an author adds an
+`about' entry for another ID than its own, the attributes become
+given. The about app scans all logs for all entries of type {\small\tt
+  `about'} and constructs a database as shown in
+Figure~\ref{fig:about}. Currently the attributes {\small\tt name} and
+{\small\tt image} are understood by most SSB user interfaces and
+are used to substitute or decorate the cryptographic ID.
 
-the latest directory state consists in executing all update events
-found in all (available) logs / this directory state is relevant to
-users as well as the forwarding fabric (set of IDs to support). Note
-well the ``subjective reader'' property: the content/view of a peer's
-user directory is dependent on its position in the social graph.  Note
-also that ``about log entries'' for {\em other} peers can be added to
-one's log e.g. for defining (subjective) display names for other
-users.
+\begin{figure}[htb]
+  \includegraphics[width=0.6\columnwidth]{figs/about-ds.pdf}
+  \caption{SSB's user directory data structure (after extraction from the logs).}
+  \label{fig:about}
+\end{figure}
+
+\noindent
+In the resulting database, each user (target) ID has two associated
+sections, `chosen' and `given'. The `given' section is itself a
+directory that keeps track of all IDs of those users having assigned
+attribute values to the given {\small\tt target\_id}. In both
+sections, the most recent attribute assignment found in a log
+overwrites any older assignments.
+
+In terms of CRUD actions, creation happens once a new SSB peer adds
+its own about entry to its log; reading the user database is performed
+on the above data structure; updates are expressed by adding an about
+entry to one's own log and all peers updating their extracted
+database; deleting a user entry is not possible, at least not directly
+(one would have to block that user ID as well as all IDs which wrote
+an update for that user).
+
+There can never be confusion about the sequence or scope of attribute
+assignments because they are ordred by the log (and thus in time) and
+kept separate, per author ID. Note also the presence of the
+``subjective reader'' property: The content of a peer's user database
+is dependent on its position in the social graph. The ``subjective''
+mindset is also visible by letting every user assign attributes to
+anybody, leaving it to the user interface (and human viewer) to select
+which display name or image is most suitable for a given ID.
 
 \subsection{Profiles of selected SSB apps}
 
