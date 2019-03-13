@@ -14,8 +14,8 @@
 \email{RaqIhBv1Wj8pTxJNgvCCY=.ed25519}
 
 \author{Erick Lavoie}
-\affiliation{INRIA, Grenoble, France}
-\email{erick.lavoie@inria.fr}
+\affiliation{McGill University, Montreal, Canada}
+\email{erick.lavoie@mail.mcgill.ca}
 
 \author{Aljoscha Meyer}
 \affiliation{TU Berlin, Germany}
@@ -172,7 +172,7 @@ approach like DAT~\cite{} or IPFS~\cite{} which assume that there
 exist replication servers but keep the separation between a data
 transport network and a server layer. In SSB, bidirectional
 communications is only possible if both parties {\em are}
-repositories. {\bf Last but not least}, log repliciation leads to a
+repositories. {\bf Last but not least}, log replication leads to a
 distributed system with inherent high resilience as any communicating
 element MUST replicate the others' logs. In traditional distributed
 systems, coordinating the data persistence as a basis for resilience
@@ -239,7 +239,7 @@ The goal of this section: show how SSB's distributed apps can reconstruct
 the app's state by parsing the logs, and operate on the app state by
 writing to the peer's log. We give more details for SSB's user
 directory and also list and quickly characterize other existing
-SSB apps. An crucial (performance) aspect is incremental indexing
+SSB apps. A crucial (performance) aspect is incremental indexing
 which we expand on in the subsection about the Kappa approach. More
 node-local support in form of libraries and conventions at the level
 of log entries is discussed in the subsection on tangles.
@@ -300,7 +300,63 @@ for a given ID.
 
 \subsection{Profiles of selected SSB apps}
 
-follow, chat, chess, git, \ldots
+Multiple applications have been written by contributors and are used
+daily by the community. We briefly present selected examples because they 
+represent alternatives to well-known services and they illustrate both opportunities
+and challenges of communication through replicated append-only logs.
+
+\textit{Git-ssb} is an alternative to GitHub~\cite{github} that replicates git-based 
+version-controlled code repositories through contributors logs. It provides an encoding 
+of repositories in SSB logs, a bridge to interoperate with git repositories, and a web-based
+viewer to browse repositories. The object 
+model of Git~\cite{chacon2014pro}, based on immutable hash-referenced objects organized in a 
+chain of commits, has a similar structure to SSB's logs, making the mapping 
+natural. Hash objects are blobs and commits are messages in individual append-only logs. 
+Other git operations, such as creating a repository, creating merge commits,
+creating a branch, or requesting the merging of an alternative branch (\textit{pull-request}) 
+to a core maintainer, are all SSB messages. This model
+provides automatic distribution of code repositories and their updates. Many developers
+can also update and perform operations the \textit{same} repository, as defined by its creation message, 
+independently. Consensus on the "official" master branch and its latest commit is enforced through social coordination
+because the developers of the community know and trust each other. Nonetheless, 
+in case of concurrent updates to the same branch in the same repository, the git bridge will create multiple branches when 
+a local git repository is updated. A user can then resolve the fork by merging the diverging branches and updating the repository.
+
+(TODO: Refer to the Tangle discussion and make shorter).
+
+
+
+
+% In fact,
+%it was an inspiration for the design of the replicated append-only logs communication model. The commit history of git has richer semantics
+%than SSB logs because it provides merging operations between different chains of commits.
+%
+%
+% The hash-objects can directly be stored in blobs, the creation of a repository,
+%the addition of commits, the creation of a branch, and the creation of a request for merging an alternative branch (\textit{pull-request})
+%are all messages in developers' feeds.
+%
+%
+%in a user feed.
+%
+%A repository, a commit, a reference (branch), 
+%
+%
+%In fact, it was a direct inspiration for the design of SSB.
+%
+%hash-, tree-, and commit-objects
+%can all easily 
+%
+%
+%git-ssb (https://git.scuttlebot.io/%25n92DiQh7ietE%2BR%2BX%2FI403LQoyf2DtR3WQfCkDKlheQU%3D.sha256)
+%-> Clarify how the conflict resolution relates to the Tangle explanations (https://github.com/noffle/git-ssb-intro#push-conflicts)
+%
+%chess (https://github.com/Happy0/ssb-chess)
+%gatherings plugin (https://github.com/pietgeursen/patch-gatherings)
+%ssb-drive (https://github.com/cn-uofbasel/ssbdrv/)
+%scry (https://github.com/ssbc/patchbay-scry)
+%follow
+
 
 \subsection{Kappa architecture}
 
@@ -308,12 +364,20 @@ follow, chat, chess, git, \ldots
 and computing the state of data structures by ``summing up'' updates
 through all logs (see for example the above ``about'' app).
 
+Overview: https://milinda.pathirage.org/kappa-architecture.com/
+Read above related work and provide a discussion of similarities and differences with SSB
+
 \subsection{Tangles, consensus, synchronization}
-\ldots
+
+Tangles intro: https://github.com/cn-uofbasel/ssbdrv/blob/master/doc/tangle.md
+
+Eventual consensus?
+
+
 
 
 % ----------------------------------------------------------------------
-\section{``SSB success stories''}
+\section{``SSB success stories''/Benefits}
 
 Already mentioned and the main reason for SSB to exist: complete
 offline operation (delay tolerant), end-to-end encryption, abides by
