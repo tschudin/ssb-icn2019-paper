@@ -298,65 +298,95 @@ anybody, leaving it to the user interface (and human viewer) to select
 which of the self-chosen or given display names and images is most suitable
 for a given ID.
 
-\subsection{Profiles of selected SSB apps}
+\subsection{Profiles of other selected SSB apps}
+\label{Section:AppProfiles}
 
-Multiple applications have been written by contributors and are used
-daily by the community. We briefly present selected examples because they 
-represent alternatives to well-known services and they illustrate both opportunities
-and challenges of communication through replicated append-only logs.
+Multiple applications have been written by contributors and are used daily by
+the SSB community. We briefly present selected examples because they represent
+alternatives to well-known services and they illustrate both opportunities and
+challenges of communication through replicated append-only logs.
 
-\textit{Git-ssb} is an alternative to GitHub~\cite{github} that replicates git-based 
-version-controlled code repositories through contributors logs. It provides an encoding 
-of repositories in SSB logs, a bridge to interoperate with git repositories, and a web-based
-viewer to browse repositories. The object 
-model of Git~\cite{chacon2014pro}, based on immutable hash-referenced objects organized in a 
-chain of commits, has a similar structure to SSB's logs, making the mapping 
-natural. Hash objects are blobs and commits are messages in individual append-only logs. 
-Other git operations, such as creating a repository, creating merge commits,
-creating a branch, or requesting the merging of an alternative branch (\textit{pull-request}) 
-to a core maintainer, are all SSB messages. This model
-provides automatic distribution of code repositories and their updates. Many developers
-can also update and perform operations the \textit{same} repository, as defined by its creation message, 
-independently. Consensus on the "official" master branch and its latest commit is enforced through social coordination
-because the developers of the community know and trust each other. Nonetheless, 
-in case of concurrent updates to the same branch in the same repository, the git bridge will create multiple branches when 
-a local git repository is updated. A user can then resolve the fork by merging the diverging branches and updating the repository.
+\textit{Git-ssb}~\cite{git-ssb} is an alternative to GitHub~\cite{github} that
+replicates git-based version-controlled code repositories through contributors
+logs. It provides an encoding of repositories in SSB logs, a bridge to
+interoperate with git repositories, and a web-based viewer to browse
+repositories. The object model of Git~\cite{chacon2014pro}, based on immutable
+hash-referenced objects organized in a chain of commits, has a similar
+structure to SSB's logs, making the mapping natural. Hash objects are blobs and
+commits are messages in individual append-only logs.  Other git operations,
+such as creating a repository, creating merge commits, creating a branch, or
+requesting the merging of an alternative branch (\textit{pull-request}) to a
+core maintainer, are all SSB messages. This model provides automatic
+distribution of code repositories and their updates through the replication of
+SSB logs. Many developers can also update and perform operations on the
+\textit{same} repository, as defined by its creation message, independently.
+Consensus on the "official" master branch and its latest commit is enforced
+through social coordination because the developers of the community know and
+trust each other. Nonetheless, in case of concurrent updates to the same branch
+in the same repository~\cite{git-ssb-push-conflict}, the git bridge will create
+multiple branches when a local git repository is updated. A user can then
+resolve the fork by merging the diverging branches and updating the repository.
+Referencing both concurrent updates in a later merge commit in effect resolves
+the ambiguity through a tangle extension~(Section~\ref{Section:Tangle}).
 
-(TODO: Refer to the Tangle discussion and make shorter).
+\textit{Ssb-chess}~\cite{ssb-chess} is a correspondence chess application in
+which players can invite one another to play, alternatively share their next
+move until the game ends, and external observers can comment on the game. The
+core data structure that represent a game is a linked list with nodes
+representing chess moves alternating between the two participants' logs. The
+detection of invalid moves is performed by the user interface using a
+validation library, because participants are trusted to only publish valid
+moves on their feed. This latter assumption was made because games are played
+between friends in a non-competitive setting. In effect, the validity of the
+latest move is implicitly confirmed by the next player choosing to follow with
+another move because if they were to disagree on the validity, the conflict can
+be handled outside the game and the game can be abandoned. Moreover, a chess
+application is easy to encode in append-only logs because the rules of chess
+preclude concurrency, i.e. at any time there is always only one of the two
+participants that is permitted to modify the state of the chess board by making
+a move. The game state also cannot be corrupted by external parties because
+only the participants, explicitly mentioned in the original invitation, are
+allowed to modify the state of the game. Any non-participant extending the game
+with their own move is simply ignored.
 
+\textit{Gatherings}~\cite{patch-gatherings} are alternatives to
+Meetup~\cite{meetup.com} that enables participants to signal their intention to
+attend or not attend to physical events. Gatherings can be public, in which
+case anyone that replicates a log will see them, or private, in which case only
+explicitly-invited people will be notified of the event and may signal their
+intention. A gathering is defined by its creation message but otherwise has no
+fixed properties. Anyone that has a reference to the creation message may
+change its properties, such as location, start and end dates, description, and
+image, by publishing an update message. The value of those properties are the
+most recent set by anyone. Initially, recency was determined by the time of
+creation, as reported by the user's client implementation (\textit{self-stated
+creation time}). While this required trust in other users, practice has shown
+that the hypothesis was reasonable. To be more robust to potential invalid
+timestamps however, some client implementations have started using the time at
+which message updates are \textit{received}, then disambiguate using the
+self-stated creation time.
 
+\textit{Scuttle-poll}~\cite{scuttle-poll} is an implementation of the polling
+model of Loomio~\cite{loomio}, an online group decision-making platform. In
+addition, it serves as the basis for \textit{Scry}~\cite{patchbay-scry}, an
+alternative to Doodle~\cite{doodle.com}, itself an online calendar tool for
+organizing meeting. A poll is a request for opinions, which for example may
+express preference for one choice among many possibilities or provide a list of
+time availabilities. A poll is created by publishing a \texttt{poll} message in
+a log with a number of possible options and a deadline. Participants then
+publish their \textit{position} among the choices available. The poll creator
+finally publishes a \textit{resolution} based on the other participants'
+positions. Concurrency in polls is limited because the creation and resolution
+of the poll are done by the same user, and therefore works quite well with the
+SSB communication model.
 
-
-% In fact,
-%it was an inspiration for the design of the replicated append-only logs communication model. The commit history of git has richer semantics
-%than SSB logs because it provides merging operations between different chains of commits.
-%
-%
-% The hash-objects can directly be stored in blobs, the creation of a repository,
-%the addition of commits, the creation of a branch, and the creation of a request for merging an alternative branch (\textit{pull-request})
-%are all messages in developers' feeds.
-%
-%
-%in a user feed.
-%
-%A repository, a commit, a reference (branch), 
-%
-%
-%In fact, it was a direct inspiration for the design of SSB.
-%
-%hash-, tree-, and commit-objects
-%can all easily 
-%
-%
-%git-ssb (https://git.scuttlebot.io/%25n92DiQh7ietE%2BR%2BX%2FI403LQoyf2DtR3WQfCkDKlheQU%3D.sha256)
-%-> Clarify how the conflict resolution relates to the Tangle explanations (https://github.com/noffle/git-ssb-intro#push-conflicts)
-%
-%chess (https://github.com/Happy0/ssb-chess)
-%gatherings plugin (https://github.com/pietgeursen/patch-gatherings)
-%ssb-drive (https://github.com/cn-uofbasel/ssbdrv/)
-%scry (https://github.com/ssbc/patchbay-scry)
-%follow
-
+These applications show how the SSB communication model greatly simplifies the
+infrastructure required to build social applications since none of the previous
+examples have to deal with issues of distribution of messages. The fact that a
+small community with a dozen or so of core developers, which are self-funded
+and working mostly voluntarily, could produce alternative applications that
+work well enough to be used daily suggests the SSB communication model does
+make the implementation of common social applications simpler.
 
 \subsection{Kappa architecture}
 
@@ -368,11 +398,21 @@ Overview: https://milinda.pathirage.org/kappa-architecture.com/
 Read above related work and provide a discussion of similarities and differences with SSB
 
 \subsection{Tangles, consensus, synchronization}
+\label{Section:Tangle}
 
 Tangles intro: https://github.com/cn-uofbasel/ssbdrv/blob/master/doc/tangle.md
 
 Eventual consensus?
 
+For all application examples presented in Section~\ref{Section:AppProfiles},
+the design decisions in most cases assumed a really high-level of shared trust
+between users/developers, which simplified the implementation and enabled a
+faster bootstrap of useful applications with limited development resources, as
+most of the work has been done voluntarily or self-funded so far. The community
+fully understands that causal ordering and well-defined data structures based
+on Tangles~(Section~\ref{Section:Tangle}) would make the implementations more
+robust in contexts with lower levels of trust and is currently in the process
+of adopting them to make the applications more robust.
 
 
 
