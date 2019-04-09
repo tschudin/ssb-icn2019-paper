@@ -584,6 +584,8 @@ graph, technically?
 % ----------------------------------------------------------------------
 \section{Related Work}
 
+Alj: TODO: Needs more secure timestamping etc: \%0+T/Bvk742LoJNBsRmITlNNr6eXEzPBOpktR3HZnr0M=.sha256
+
 \begin{itemize}
 \item Linda tuple space (global data pool): apps working with wr() and rd() only.
 \item Haggle (pocket-switched networks), opportunistic networking, DTN
@@ -598,7 +600,89 @@ graph, technically?
 % ----------------------------------------------------------------------
 \section{SSB Roadmap and Future Work}
 
-Obvious things to fix, priorities, and the more challenging problems \ldots
+TODO figure out organization of this vs pain-points
+
+TODO introduce the scope of this section
+Future work on the implementation of the soliton model via hash chains:
+
+Retroactively ``obvious"" fixes (i.e. stuff without drawbacks) TODO write this properly:
+
+\begin{itemize}
+
+\item the json encoding is an unnecessary source of complexity, should have been a simple binary encoding
+
+\item messages should have been clearly separated into integrity metadata, content metadata (type, timestamp), and content
+
+\end{itemize}
+
+\subsection{Partial Replication}
+
+By using a linked list of messages as the underlying datastructure, a message can only be verified in time linear to its sequence number. Since all previous messages need to be available for verification, this also implies linear storage overhead. A more granular notion of this problem is to look at the complexity requirements for verifying the hash chain between any pair of messages. For SSB, this complexity is linear in the difference of their sequence numbers.
+
+A natural start for improving on SSB is to look for data structures that allow messages to be verified by only traversing a sublinear number of messages. Such data structures have been studied in the context of secure timestamping, in particular both anti-monotone binary graphs~\cite{buldas1998new} and threaded authentication trees~\cite{buldas2000optimally} provide verification using a logarithmic number of messages, while only adding a single additional hash to each message.
+
+An authenticated append-only log built on these data structure would allow {\em partial replication} of logs while still being able to verify all messages that it replicates. Only a logarithmic number of additional messages would need to be stored. Such a system would solve the scaling problems of SSB's all-or-nothing approach.
+
+As an extreme case of partial replication, a feed could fetch a single specific message, without having to request its full feed. SSB's out-of-order messages also allow this, but they forfeit the ability to verify the received message. With partial replication, only a logarithmic number of additional messages would have to be fetched to verify the specific message.
+
+\cite{lipmaa1999secure} defines {\em head} and {\em tail} sets for each entry in an anti-monotone binary graph or a threaded authentication tree, such that the union of the heads and tails of any two messages includes all messages necessary to verify the newer message against the older one. These sets are of size logarithmic in the sequence number. As long nodes request and store these additional sets, trasitivity of replication is maintained even when partially replicating logs.
+
+An interesting problem in this context is how peers would indicate the subsets they want to replicate. While listing sequence numbers works fine, applications would benefit from utilizing semantic criteria instead, for example subscribing to only messages of certain types. Finding a general framework for specifying partial subscriptions based on semantic frameworks is an open problem.
+
+One particular problem in this setting is that malicious peers could deliberately withhold a message even though it fits a particular semantic criterium. Unlike in sequence number based replication, there is no immediate way to detect such omissions. This could be mitigated by adding one additional sequence number per criterion to each message. This approach of however greatly limits the expressivity of the criteria specification mechanism. The example of subscribing to messages of a certain type would work fine: Each message would include a number indicating how many preceding messages of the same type are in the feed. But e.g. subscriptions based on arbitrary prefixes of types would require one sequence number {\em per character} of the message type, which could already be too costly. If there were multiple criteria and peers were able to select any number of them, the number of additional sequence numbers would be equal to the product of the number of sequence numbers of each criterium. Since this approach does not scale, it would be beneficial to find alternate mechanisms for detecting malicious ommissions of partially replicated feeds.
+
+Due to the above problems, it might often make sense to define an application-specific partially-replicable log format rather than opting for a general-purpose application framework like SSB. When designing such a framework, it is important to keep in mind that partial replication and subscriptions increase the complexity of the API offered to the applications.
+
+\subsection{Local Deletion}
+
+SSB includes the full content data in its message signatures. Accordingly, the content needs to be available in order to verify the message. This poses a problem: What happens if a single message in a log has objectable content? If a server locally deletes that content, then it can not replicate the log to its peers beyond the point of that message, since the peers could not verify beyond that point.
+
+This situation could be improved by only including a {\em hash} of the content in the signature, rather than the content itself. This way, content could be deleted from a local log replica, while keeping the hash, so that the whole log could still be verified and thus replicated.
+
+This change does slightly increase the complexity of log replication and the API between server and clients: Missing message content introduces a new case, whereas in current SSB a message is either missing or completely avaiable.
+
+It should be noted that in current SSB, blobs support both local deletion and targeted replication. In a protocol with both partial replication and local deletion, there would be no need to rely on blobs for these properties. Messages essentially become blobs where authorship and relative ordering can be verified.
+
+\subsection{Cryptographic Agility}
+
+TODO help, I don't speak scientific crypto lingo
+
+Since SSB relies on multiple cryptographic prmitives (signatures and hashes for the log format, encryption for the replication protocol), cryptographic agility~\cite{nelson2011crypto} is an essential concern. All hashes and signatures in the logs include an indicator of the cryptographic primitive that has been used. This means that the protocol can introduce the use of new primitives as old ones become broken.
+
+An open problem is how old log entries can be ``saved"" once their primitives become insecure. The naive approach of republishing old messages with a new key changes the hashes of all those messages, thus breaking inter-message references. Alternate approaches could be based on publishing new messages that assert facts about older messages, or determining the trustworthyness of old messages based on how they are being referenced.
+
+\subsection{Log Lifecycle and Key Rotation}
+
+Related to the previous question, bla, I'm getting to tired... log lifecycle and key rotation.
+
+% - alternative ways of dealing with forks
+% - principled data structures
+% - aggregating multiple feeds into (nested) logical entities (partially ordered)
+%   - how? pki, reusable message patterns
+%
+% - message type coordination? schemas?
+%
+% - db layer: causal ordering, indexing
+%
+% - replication
+%   - what happens if we drop the assumption that feeds map to humans?
+%   - adversarial context?
+%
+% - alternate models (unordered feeds, dag feeds)
+% - lossy compaction
+%
+% Future work on social stuff
+%
+% - privacy! access control
+% - separate subscribing to content and access control
+% - encrypting stuff by default?
+% - replication using private set intersection
+%
+% - multiple identities
+% - (delegating) moderation
+% - (delegating) forbidden blobs and messages (the latter assuming offchain-content)
+%
+% - problems that arise when there's no few-to-one mapping between feeds and humans
 
 
 % ----------------------------------------------------------------------
