@@ -194,8 +194,51 @@ service.
 % ----------------------------------------------------------------------
 \section{SSB Architecture and Protocol}
 
-Introduce and explain figure~\ref{fig:waist} here, the role of SSB as
-the protocol stack's waist (like IP is for the Internet).
+In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. Since anybody can generate a random keypair with very low probability of multiple peers generating the same keypair, no central authority is necessary for introducing users to the system.
+
+The single-writer append-only logs of SSB consist of {\em messages} that include a {\em backlink}: The cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blogchain is that each user maintains their own log and cryptographically signs all their messages. Messages whose backlink points to a message in a different log (i.e. from a different author) are considered invalid.
+
+These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB server checks that every message has exactly zero or one incoming backlinks. If it has more than one, the feed is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log can not be appended to anymore.
+
+Concretely, each message contains the following pieces of data:
+
+\begin{itemize}
+
+\item the {\em backlink} to the previous message, or a null value
+
+\item the public key of the message's {\em author}
+
+\item the {\em sequence number} of the message, which must be one more than the sequence number of the previous message, or exactly one if it is the first message of the log
+
+\item a claimed {\em timestamp} of when the message was created
+
+\item a {\em hash} indicator that specifies the concrete hash function that was used for the backlink
+
+\item the {\em content} of the message
+
+\item the author's {\em signature} over all the previous data
+
+\end{itemize}
+
+The {\em content} is a json object that must contain a message {\em type} string that serves as a hint for how the content should be interpreted. SSB enforces that the content is valid json.
+Alternatively, the content can be a byte string of encrypted data, together with a tag that signifies which encryption algorithm was used.
+
+The precise, byte-for-byte definition of the json-based message encoding is given in \cite{ssb-spec-messages}.
+
+The principal function of SSB servers is to connect to other servers and exchange log updates. To do so, they maintain an end-to-end encrypted overlay network over which they run a gossip protocol. When two servers start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a peer receives a lower sequence number for a feed than it sent, it transmits the log messages that the peer is lacking. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, maintained via the plumtree~\cite{leitao2007epidemic} protocol.
+
+In addition to this primary replication mechanism, SSB provides two other ways of exchanging information. {\em Blobs} are content-addressed pieces of data that are not part of any log. They are not widely disseminated automatically, but rather fetched on demand via a simple request-flooding protocol. {\em Out-of-order messages} are a similar mechanism to address and fetch log entries on demand via their hashes.
+
+Beyond replicating logs and checking their validity, an SSB server offers an API to {\em SSB clients}. These can be arbitrary programs that issue RPCs to the server over an IPC mechanism. The exposed functionality includes writing to the author's log, reading from arbitrary logs, specifying which logs a server should replicate, and fetching blobs and out-of-order messages. SSB thus becomes a platform for building applications, encapsulating the complexity of data replication.
+
+The reference implementation of SSB also includes a mechanism for loading {\em plugins} into the server to extend its functionality. There are a few default plugins, these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin scans the server's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the server to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph. Transitive replication can always be overridden via special {\em block} messages.
+
+This example showcases a crucial property of SSB: Decisions about whom to replicate can be guided by the content of the very data that is replicated. By storing the relevant information inside the author's log (as opposed to a local database), other peers can also use this informtion to guide their decisions.
+
+Information stored in the log is also used to solve the problem of joining the overlay network: Authors can publish the static ip addresses of highly-available servers (called {\em pubs}) to their log. When a server needs to connect to the overlay, the responsible plugin can scan any available log for this information.
+
+It is worth noticing that this architecture spans four independent layers of protocols. The most fundamental protocol is the message format. All peers need to agree on what consitutes identities, valid messages, and how to compute hashes to address messages and blobs. This is the "thin waist" of SSB (see figure~\ref{fig:waist}).
+Next is the specific mechanism by which servers exchange data. The default mechanism is one option, but alternative mechanisms such as distribution via a sneakernet could also be deployed. Different peers that do not share a common replication mechanism could still interact indirectly, as long as there are some servers that understand multiple replication protocols. The protocol by which a server serves its clients is independent from the previous procotols. And finally, the way that different clients might publish and interpret messages is again a separate affair.
 
 \begin{figure}[htb]
   \includegraphics[width=0.9\columnwidth]{figs/ssb-waist.pdf}
@@ -203,33 +246,44 @@ the protocol stack's waist (like IP is for the Internet).
   \label{fig:waist}
 \end{figure}
 
-Note: the dissemination/replication layer is able to (and must) read
-the logs in order to extract the social graph, responsible for
-reachability/forwarding decisions.
-
-\subsection{Identities and their append-only log}
-
-\subsection{Social graph and log replication}
-
-follow, follow-back, block
-
-\subsection{Blobs}
-
-separate content category, own name (independent of logs) and
-dissemination protocol
-
-\subsection{Log entry format}
-
-envelope and payload, hashchain entry, JSON
-
-\subsection{E2E encryption and metadata privacy}
-
-\subsection{SSB as an IP overlay, EBT}
-
-\subsection{Secure Handshake (SHS)}
-
-\subsection{SSB Pubs (aka super nodes?)}
-\ldots
+% \subsection{old stuff}
+%
+% Introduce and explain figure~\ref{fig:waist} here, the role of SSB as
+% the protocol stack's waist (like IP is for the Internet).
+%
+% \begin{figure}[htb]
+%   \includegraphics[width=0.9\columnwidth]{figs/ssb-waist.pdf}
+%   \caption{Secure Scuttlebutt's protocol stack.}
+%   \label{fig:waist}
+% \end{figure}
+%
+% Note: the dissemination/replication layer is able to (and must) read
+% the logs in order to extract the social graph, responsible for
+% reachability/forwarding decisions.
+%
+% \subsection{Identities and their append-only log}
+%
+% \subsection{Social graph and log replication}
+%
+% follow, follow-back, block
+%
+% \subsection{Blobs}
+%
+% separate content category, own name (independent of logs) and
+% dissemination protocol
+%
+% \subsection{Log entry format}
+%
+% envelope and payload, hashchain entry, JSON
+%
+% \subsection{E2E encryption and metadata privacy}
+%
+% \subsection{SSB as an IP overlay, EBT}
+%
+% \subsection{Secure Handshake (SHS)}
+%
+% \subsection{SSB Pubs (aka super nodes?)}
+% \ldots
 
 % ----------------------------------------------------------------------
 \section{Distributed Apps and Data Structures over SSB}
@@ -433,7 +487,7 @@ section.
 
 \item Extensible protocol: apps run on the end devices, no dependency
   on operating a central or cloud-based service instance.
-  
+
 \item Your peer is your backup, explain how that works. RAFT-like resilience?
 
 \item Can also have backup without relying on friends: simply create a
@@ -451,9 +505,9 @@ section.
 \item Realtime notification (log updates) via long-lasting SHS
   sessions (the special JS pipes). Can/could also be used for
   real-time audio (but the logs would become quite large).
-  
+
 \item \ldots
-  
+
 \end{itemize}
 
 
