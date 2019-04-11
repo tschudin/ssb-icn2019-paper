@@ -196,7 +196,7 @@ service.
 
 In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. Since anybody can generate a random keypair with very low probability of multiple peers generating the same keypair, no central authority is necessary for introducing users to the system.
 
-The single-writer append-only logs of SSB consist of {\em messages} that include a {\em backlink}: The cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blogchain is that each user maintains their own log and cryptographically signs all their messages. Messages whose backlink points to a message in a different log (i.e. from a different author) are considered invalid.
+The single-writer append-only logs of SSB consist of {\em messages} that include a {\em backlink}: The cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blockchain is that each user maintains their own log and cryptographically signs all their messages. Messages whose backlink points to a message in a different log (i.e. from a different author) are considered invalid.
 
 These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB server checks that every message has exactly zero or one incoming backlinks. If it has more than one, the feed is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log can not be appended to anymore.
 
