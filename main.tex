@@ -19,7 +19,7 @@
 
 \author{Aljoscha Meyer}
 \affiliation{TU Berlin, Germany}
-\email{???@tu-berlin.de}
+\email{aljoscha.t.meyer@campus.tu-berlin.de}
 
 \author{Christian Tschudin}
 \affiliation{University of Basel, Switzerland}
@@ -222,6 +222,8 @@ Concretely, each message contains the following pieces of data:
 
 The {\em content} is a json object that must contain a message {\em type} string that serves as a hint for how the content should be interpreted. SSB enforces that the content is valid json.
 Alternatively, the content can be a byte string of encrypted data, together with a tag that signifies which encryption algorithm was used.
+
+SSB defines a format for encoding the public keys of identities and the hashes of messages and blobs (see below) as strings. This allows applications to scan the content of messages for such references, e.g. in order to create database indices.
 
 The precise, byte-for-byte definition of the json-based message encoding is given in \cite{ssb-spec-messages}.
 
@@ -584,7 +586,10 @@ graph, technically?
 % ----------------------------------------------------------------------
 \section{Related Work}
 
-Alj: TODO: Needs more secure timestamping etc: \%0+T/Bvk742LoJNBsRmITlNNr6eXEzPBOpktR3HZnr0M=.sha256
+The basic ideas behind SSB can be traced back to the nineties: Secure logging~\cite{TODO} and secure relative time-stamping~\cite{TODO}. The major innovation of SSB is to use these techniques for disseminating data through a gossip protocol in a network of untrusted peers.
+% https://scholar.google.de/scholar?q=Cryptographic+Support+for+Secure+Logs+on+Untrusted+Machines&hl=en&as_sdt=0,5
+% https://scholar.google.de/scholar?hl=en&as_sdt=0,5&q=How+to+TimeStamp+a+Digital+Document
+% google scholar currently returns a 403 when trying to access the bibtex citation snippet...
 
 \begin{itemize}
 \item Linda tuple space (global data pool): apps working with wr() and rd() only.
@@ -598,22 +603,10 @@ Alj: TODO: Needs more secure timestamping etc: \%0+T/Bvk742LoJNBsRmITlNNr6eXEzPB
 \end{itemize}
 
 % ----------------------------------------------------------------------
-\section{SSB Roadmap and Future Work}
 
-TODO figure out organization of this vs pain-points
+\section{Future Work: Log Format}
 
-TODO introduce the scope of this section
-Future work on the implementation of the soliton model via hash chains:
-
-Retroactively ``obvious"" fixes (i.e. stuff without drawbacks) TODO write this properly:
-
-\begin{itemize}
-
-\item the json encoding is an unnecessary source of complexity, should have been a simple binary encoding
-
-\item messages should have been clearly separated into integrity metadata, content metadata (type, timestamp), and content
-
-\end{itemize}
+This section outlines a few dimensions in which the SSB log format could be extended to provide useful additional features.
 
 \subsection{Partial Replication}
 
@@ -647,46 +640,77 @@ It should be noted that in current SSB, blobs support both local deletion and ta
 
 TODO help, I don't speak scientific crypto lingo
 
-Since SSB relies on multiple cryptographic prmitives (signatures and hashes for the log format, encryption for the replication protocol), cryptographic agility~\cite{nelson2011crypto} is an essential concern. All hashes and signatures in the logs include an indicator of the cryptographic primitive that has been used. This means that the protocol can introduce the use of new primitives as old ones become broken.
+Since SSB relies on multiple cryptographic primitives (signatures and hashes for the log format, encryption for the replication protocol), cryptographic agility~\cite{nelson2011crypto} is an essential concern. All hashes and signatures in the logs include an indicator of the cryptographic primitive that has been used. This means that the protocol can introduce the use of new primitives as old ones become broken.
 
 An open problem is how old log entries can be ``saved"" once their primitives become insecure. The naive approach of republishing old messages with a new key changes the hashes of all those messages, thus breaking inter-message references. Alternate approaches could be based on publishing new messages that assert facts about older messages, or determining the trustworthyness of old messages based on how they are being referenced.
 
-\subsection{Log Lifecycle and Key Rotation}
+\subsection{Log Management}
 
-Related to the previous question, bla, I'm getting to tired... log lifecycle and key rotation.
+In SSB, there is no mechanism for terminating a log. But it would be straightforward to add a mechanism that declares that the log will not be extended in the future (and any future extensions should thus be discarded). By allowing this mechanism to carry some payload data, key rotation could be supported: The log termination record would include the public key of a new log that should serve as the extension of the terminated one.
 
-% - alternative ways of dealing with forks
-% - principled data structures
-% - aggregating multiple feeds into (nested) logical entities (partially ordered)
-%   - how? pki, reusable message patterns
-%
+\subsection{Encoding Simplifications}
+
+The json-based encoding turned out to be a major source of incidental complexity when implementing SSB in languages other than javascript. A principled redesign should probably use a simple binary encoding instead.
+
+Additionally, messages should more clearly separate integrity metadata (backlink, sequence number and signature), content metadata (type and timestamp), and the actual content.
+
+\subsection{Fundamental Changes}
+
+The previously mentioned changes to the log format would all result in protocols that would function in basically the same way as SSB. But it is also possible to envision some little changes that would result in systems with fundamentally different behavior. An incomplete list of interesting ideas:
+
+\begin{itemize}
+  \item introducing a mechanism to "merge" forked feeds rather than discarding them
+  \item using different data structures than linked lists as feeds, e.g. sets, maps, trees or directed-acyclic graphs
+  \item making the protocol aware of application-level semantics to support lossy but semantics-preserving log compaction
+\end{itemize}
+
+The design space for systems of identity-centric data replication is vast and not well explored. SSB only occupies a tiny fraction of it.
+
+\section{Future Work: Userspace}
+
+Beyond protocol-level evolution, there are a couple of higher-level issues that often arise when designing applications on top of SSB. This section gives an overview over the most common ones and sketches potential approaches.
+
+\subsection{Multi-Device Support}
+
+If two different devices used the same SSB identity to publish messages concurrently, this would result in a forked feed. It is thus recommended to create a distinct identity for each device to eliminate this risk. This however leads to problems such as being unable to decrypt encrypted messages on some device because they have been encrypted to the public key used by a different device. The user also needs to follow or block identities once per device.
+
+One approach could be to develop schemes that allow sharing the same private key across multiple devices to allow read-access, while enforcing mutual exclusion on writes.
+
+A different angle is to write applications in a way that anticipates that there might be a one-to-many mapping from users to SSB identities. Since the messages in a single feed are totally ordered but messages across multiple feeds might only be partially ordered, it is not sufficient to naively treat a set of feeds as a compound feed. Instead, the application needs to be designed from the ground up to deal with partially ordered sets of messages.
+
+Orthogonal to the issue of \textit{using} data from aggregated, partially ordered feeds is the issue of determining which feeds to aggregate in the first place. Settling on a common scheme for signaling compound feeds will be necessary for SSB to successfully improve on the multi-device situation.
+
+\subsection{Access Control}
+
+Currently, an ssb server will hand out data to anyone who asks. The messages that control replication (\textit{follows} and \textit{blocks}) only specify where data is wanted, but they can't express bounds on how far data should be spread. All data is conceptually visible globally.
+
+To improve privacy, some servers choose to only forward messages of some feed $F$ to identities that are followed by the feed $F$. This is a rather ad-hoc solution, assigning meaning to \textit{follow} messages that might not have been intended. Work is underway for specifying dedicated messages that place bounds on how far data should be propagated through the social graph. These bounds can not be enforced however, anyone who has the data can obviously choose to ignore these requests. This is just as true as in any distributed setting.
+
+In addition to publishing policies on who should get access to messages, encryption can be used to ensure that only the intended recipients can access the data. Currently, the only supported mechanism is encrypting a message to a small set of recipients. More sophisticated approaches such as encrypted groups could be adapted for ssb.
+
+\subsection{Causal Ordering}
+
+Whenever a message $m_1$ contains the hash of another message $m_2$, this implies that $m_2$ must have already existed at the point where $m_1$ was created. Taking the transitive closure of this irreflexive relation yields a strict partial order. For any pair of messages $m_1$, $m_2$, $m_2$ is guaranteed to be older than $m_2$ if $(m_1, m_2)$ is an element of this order. Equivalently this can be interpreted as the existence of a (directed) path from $m_2$ to $m_1$ on the graph with the set of all messages as vertices and edges corresponding to the hashes inside those messages.
+
+Storing this transitive closure in a space-efficient way such that it can be quickly queried and efficiently updated is a difficult but well-studied problem in the database literature~\cite{jin2012scarab}~\cite{yildirim2013dagger}. It should be possible to leverage some properties of SSB to get higher-quality results. The immutability of messages reduces the number of cases when dynamically maintaining the index structure, and the fact that each feed forms a total order can be utilized to efficiently encode the relation. Designing and implementing a general framework for performing causal ordering queries on SSB messages would be both an interesting research topic and a powerful tool for building applications.
+
+\subsection{Replication Improvements}
+
+The currently used default replication protocol does not protect against adversarial nodes, for example it would be fairly easy to launch an eclipse attack~\cite{singh2006eclipse} against the overlay network. But whereas it is difficult to defend against these attacks in general, SSB can make use of data such as the friend graph to protect against them. A \textit{follow} message can be interpreted as an expression of trust. Assuming that trusted peers are unlikely to perform an attack, keeping a certain number of trusted peers in the views of the peer sampling service would protect against eclipse attacks.
+
+Another area where the replication protocol could be improved is by using private set intersection when determining the set of feeds that both parties are interested in. That way, untrusted peers would not be able to learn about new ids purely from the replication layer. Combined with an access control mechanism that only forwards data to authorized identities, this would provide resilience against bots ``spidering"" the network.
+
+% - db layer: indexing
 % - message type coordination? schemas?
 %
-% - db layer: causal ordering, indexing
-%
-% - replication
-%   - what happens if we drop the assumption that feeds map to humans?
-%   - adversarial context?
-%
-% - alternate models (unordered feeds, dag feeds)
-% - lossy compaction
-%
-% Future work on social stuff
-%
-% - privacy! access control
-% - separate subscribing to content and access control
-% - encrypting stuff by default?
-% - replication using private set intersection
-%
-% - multiple identities
 % - (delegating) moderation
 % - (delegating) forbidden blobs and messages (the latter assuming offchain-content)
-%
-% - problems that arise when there's no few-to-one mapping between feeds and humans
-
+% - onboarding
 
 % ----------------------------------------------------------------------
 \section{Conclusions}
+
+TODO explicitly mention privacy challenges
 
 \ldots
 
