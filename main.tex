@@ -431,101 +431,6 @@ on Tangles~(Section~\ref{Section:Tangle}) would make the implementations more
 robust in contexts with lower levels of trust and is currently in the process
 of adopting them to make the applications more robust.
 
-
-
-% ----------------------------------------------------------------------
-\section{``SSB success stories''/Benefits}
-
-Already mentioned and the main reason for SSB to exist: complete
-offline operation (delay tolerant), end-to-end encryption, abides by
-the decent tenets (no central service or trust dependency).
-
-The ``subjective reader'' service level is adequate for social media,
-banking apps may be another story. Technical advantage: permits fully
-concurrent operations i.e. no bottleneck in the content processing,
-see also CRDT entry below. For scaling limits of pubs, see the next
-section.
-
-\begin{itemize}
-
-\item Extensible protocol: apps run on the end devices, no dependency
-  on operating a central or cloud-based service instance.
-
-\item Your peer is your backup, explain how that works. RAFT-like resilience?
-
-\item Can also have backup without relying on friends: simply create a
-  device as a private peer that only follows you.
-
-\item Monotonically growing logs are ideal for CRDT, modulo log
-  availability (``subjective reader''). Hence: scaling
-
-\item Off-loading of indexing work: service could be offered by pub
-  (in the cloud) which has a copy of the logs anyway. Would only work
-  when online, though. Except where content is encrypted. Or even
-  fully client-server model (ssb-lite) exposing only the UI without
-  need to store locally.
-
-\item Realtime notification (log updates) via long-lasting SHS
-  sessions (the special JS pipes). Can/could also be used for
-  real-time audio (but the logs would become quite large).
-
-\item \ldots
-
-\end{itemize}
-
-
-% ----------------------------------------------------------------------
-\section{``SSB pain points'', limitations (analysis / critical review)}
-
-\subsection{Onboarding}
-
-\subsection{Crypto}
-
-re-keying peers, forward secrecy
-
-\subsection{Trusting Pubs}
-
-Pubs will see your complete social graph, you have to trust them. If
-pub is operated in the cloud, then its private key is difficult to
-protect (= potentially accessible to the cloud provider),
-
-\subsection{Routing and Scalability}
-
-\subsection{Protocol Agility}
-
-binary msg format, crypto
-
-\subsection{Resource attacks}
-e.g. easy to follow a clique of peers that has been setup for DoS
-reasons (with humongous logs), victims will include them in the 2-hop
-neighborhood, difficult to automatically block (detecting the shape of
-the clique, clique members added faster than victims can remove them).
-
-\subsection{Deleting content, GDPR, ephemeral content}
-
-\subsection{SLA for Blobs, privacy of blob transfer}
-
-\subsection{Scaling}
-
-Pubs may experience scaling problems: unlike routers, an SSB pub can
-not rely on queues (and taildrop) to postpone work: has to store all
-logs of all 2hop neighbors. Social graph of a pub may grow too big (X
-times 100 new nodes per new user, on average?). Currently no policy to
-randomly drop logs? If too many pubs drop the log of a specific peer,
-this peer may ``loose SSB-connectivity'', fall out of the social
-graph, technically?
-
-\subsection{KawaiiPunk's critique}
-
-\subsection{Problem of multi-device peers}
-
-\subsection{Global (thus central) coordination needed of 'type' field
-  name space, applies also  to other fields at the SSB waist (e.g. new
-  crypto algos)}
-
-\subsection{Unfriending pubs}
-\ldots
-
 % ----------------------------------------------------------------------
 \section{Comparing SSB with Named Data Networking (NDN)}
 
@@ -545,24 +450,12 @@ graph, technically?
 -- can we use NDN's CA trust model on a by-peer basis, mimic SSB's IDs?
 
 % ----------------------------------------------------------------------
-\section{Related Work}
-
-The basic ideas behind SSB can be traced back to the nineties: Secure logging~\cite{schneier1998cryptographic} and secure relative time-stamping~\cite{haber1990time}. The major innovation of SSB is to use these techniques for disseminating data through a gossip protocol in a network of untrusted peers.
-
-\begin{itemize}
-\item Linda tuple space (global data pool): apps working with wr() and rd() only.
-\item Haggle (pocket-switched networks), opportunistic networking, DTN
-\item ICN in general
-\item \ldots
-\item WAL is anchor of persistence in distributed systems. Discuss scenarios with node crashing before/after contacting a peer. Rare chance of forking a log in case of network partition.
-\item RAFT, resilient log-based consensus. Log compactation is what SSB is lacking, but could add (on a per-app basis).
-\item GIT and DAT
-\item Kappa and CoucheDB
-\end{itemize}
-
-% ----------------------------------------------------------------------
 
 \section{Future Work: Log Format}
+
+TODO better introduction for this (and also the next?) section
+
+TODO explicitly refer to these as potential areas of academic interest?
 
 This section outlines a few dimensions in which the SSB log format --- SSB's ``thin waist'' --- could be modified to provide additional useful properties.
 
@@ -665,6 +558,112 @@ Storing this transitive closure in a space-efficient way such that it can be qui
 The currently used default replication protocol does not protect against adversarial nodes, for example it would be fairly easy to launch an eclipse attack~\cite{singh2006eclipse} against the overlay network. But whereas it is difficult to defend against these attacks in general, SSB can make use of data such as the friend graph to protect against them. A \textit{follow} message can be interpreted as an expression of trust. Assuming that trusted peers are unlikely to perform an attack, keeping a certain number of trusted peers in the views of the peer sampling service would protect against eclipse attacks.
 
 Another area where the replication protocol could be improved is by using private set intersection when determining the set of feeds that both parties are interested in. That way, untrusted peers would not be able to learn about new ids purely from the replication layer. Combined with an access control mechanism that only forwards data to authorized identities, this would provide resilience against bots ``spidering'' the network.
+
+TODO mention alternative models (indexing-in-the-cloud, lite clients) here?
+
+% ----------------------------------------------------------------------
+\section{``SSB success stories''/Benefits}
+
+TODO rename the section. Merge this and the pain-points into a single section?
+
+TODO introduce the section
+
+TODO touch on encryption (as usual, Alj is uncomfortable writing about crypto)
+
+An often stated mantra in SSB development is ``no global singletons''. SSB is thus a fully decentralized system, or more accurately a collection of decentralized systems that overlap to varying degrees. It is consequently highly resilient to (targeted) failures, users do not need to depend on any single, priviledged central authority, including cloud-based service providers. Going beyond the common mentality of a grand unified social platform, there are deliberately isolated networks, for example limited to a family, or a specific local area network.
+
+Since SSB applications only interact with the local replicas of logs, complete offline operation is automatically built in. Offline operation is simply a special case of a network partition. Because this case occurs so often, the protocol is geared towards handling network partitions gracefully, further contributing to the resilience of SSB. In particular, all operations are delay tolerant.
+
+Continuing with the theme of resilience, data loss is highly unlikely, since full log replicas are stored throughout the network. Indeed it is common practice when migrating between devices or during development to delete the whole local database, keeping nothing but the keypair and optionally a list of servers with a well-known ip address. Upon starting a server again, all data gets retrieved from the network.
+% TODO mention the special case of running a dedicated device for backup purposes?
+
+% this might be a good place for mentioning encryption?
+
+By leveraging trust instead of trying to eliminate it, there is no need for proof-of-work and similar wasteful techniques. The delay tolerance allows routing layers that can optimize for efficient usage of resources rather than going for minimal latency at any cost. This mentality could go a long way towards systems that are more sustainable than current alternatives. And there are strong arguments that favoring systems that try to eradicate inter-human trust might not lead to a particularly desirable future.
+
+The freedom of applications to interpret data in whatever way they see fit reduces the ability of centralized powers to coerce users. Furthermore, the usage of json as a common, self-describing data format prevents information being ``closed in''. Rather than depending on a proprietary API, interoperability and the ability to create alternative frontends is the default.
+
+Due to the ``subjective reader'' approach, all ssb servers can operate concurrently. There is no need for costly synchronization across nodes. Applications can fully embrace this, for example by using CRDTs. The monotonically growing logs are well-suited for implementing CRDTs and similar techniques.
+
+As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features. Applications can simply start producing new kinds of messages, and interoperability works out with all users who share the same interpretation of those messages. Especially when evolving functionality, it is often sufficient to add more entries to a json object. Other applications simply ignore them but will continue working.
+
+This results in an organic evolution of features, without ``the system'' ever shutting down. Like any uncoordinated evolutionary process, the end result might not be as streamlined as a shiny, pre-designed solution. But unlike many such proposed, streamlined systems, the continuous and incremental improvement of the SSB ecosystem has resulted in a thriving system that serves the needs of thousands of users. And it will continue to evolve.
+
+TODO is this \textit{too} political/opinionated? Or not political \textit{enough}? We really need that ``sociological computer science'' journal... Feel free to tone this section down. But damn, writing those words \textit{felt good}!
+
+
+% ----------------------------------------------------------------------
+\section{``SSB pain points'', limitations (analysis / critical review)}
+
+\subsection{Onboarding}
+
+\subsection{Crypto}
+
+re-keying peers, forward secrecy
+
+\subsection{Trusting Pubs}
+
+Pubs will see your complete social graph, you have to trust them. If
+pub is operated in the cloud, then its private key is difficult to
+protect (= potentially accessible to the cloud provider),
+
+\subsection{Routing and Scalability}
+
+\subsection{Protocol Agility}
+
+binary msg format, crypto
+
+\subsection{Resource attacks}
+e.g. easy to follow a clique of peers that has been setup for DoS
+reasons (with humongous logs), victims will include them in the 2-hop
+neighborhood, difficult to automatically block (detecting the shape of
+the clique, clique members added faster than victims can remove them).
+
+\subsection{Deleting content, GDPR, ephemeral content}
+
+\subsection{SLA for Blobs, privacy of blob transfer}
+
+\subsection{Scaling}
+
+Pubs may experience scaling problems: unlike routers, an SSB pub can
+not rely on queues (and taildrop) to postpone work: has to store all
+logs of all 2hop neighbors. Social graph of a pub may grow too big (X
+times 100 new nodes per new user, on average?). Currently no policy to
+randomly drop logs? If too many pubs drop the log of a specific peer,
+this peer may ``loose SSB-connectivity'', fall out of the social
+graph, technically?
+
+\subsection{KawaiiPunk's critique}
+
+\subsection{Problem of multi-device peers}
+
+\subsection{Global (thus central) coordination needed of 'type' field
+  name space, applies also  to other fields at the SSB waist (e.g. new
+  crypto algos)}
+
+\subsection{Unfriending pubs}
+
+% danger of splintering into mutually non-understanding fractions by using different messages (or even worse interpreting messages in different ways)
+
+\ldots
+
+% ----------------------------------------------------------------------
+\section{Related Work}
+
+The basic ideas behind SSB can be traced back to the nineties: Secure logging~\cite{schneier1998cryptographic} and secure relative time-stamping~\cite{haber1990time}. The major innovation of SSB is to use these techniques for disseminating data through a gossip protocol in a network of untrusted peers.
+
+\begin{itemize}
+\item Linda tuple space (global data pool): apps working with wr() and rd() only.
+\item Haggle (pocket-switched networks), opportunistic networking, DTN
+\item ICN in general
+\item \ldots
+\item WAL is anchor of persistence in distributed systems. Discuss scenarios with node crashing before/after contacting a peer. Rare chance of forking a log in case of network partition.
+\item RAFT, resilient log-based consensus. Log compactation is what SSB is lacking, but could add (on a per-app basis).
+\item GIT and DAT
+\item Kappa and CoucheDB
+\end{itemize}
+
+Also contrast with the ``decentralization'' provided by blockchains?
 
 % ----------------------------------------------------------------------
 \section{Conclusions}
