@@ -248,45 +248,6 @@ Next is the specific mechanism by which servers exchange data. The default mecha
   \label{fig:waist}
 \end{figure}
 
-% \subsection{old stuff}
-%
-% Introduce and explain figure~\ref{fig:waist} here, the role of SSB as
-% the protocol stack's waist (like IP is for the Internet).
-%
-% \begin{figure}[htb]
-%   \includegraphics[width=0.9\columnwidth]{figs/ssb-waist.pdf}
-%   \caption{Secure Scuttlebutt's protocol stack.}
-%   \label{fig:waist}
-% \end{figure}
-%
-% Note: the dissemination/replication layer is able to (and must) read
-% the logs in order to extract the social graph, responsible for
-% reachability/forwarding decisions.
-%
-% \subsection{Identities and their append-only log}
-%
-% \subsection{Social graph and log replication}
-%
-% follow, follow-back, block
-%
-% \subsection{Blobs}
-%
-% separate content category, own name (independent of logs) and
-% dissemination protocol
-%
-% \subsection{Log entry format}
-%
-% envelope and payload, hashchain entry, JSON
-%
-% \subsection{E2E encryption and metadata privacy}
-%
-% \subsection{SSB as an IP overlay, EBT}
-%
-% \subsection{Secure Handshake (SHS)}
-%
-% \subsection{SSB Pubs (aka super nodes?)}
-% \ldots
-
 % ----------------------------------------------------------------------
 \section{Distributed Apps and Data Structures over SSB}
 
@@ -603,7 +564,7 @@ The basic ideas behind SSB can be traced back to the nineties: Secure logging~\c
 
 \section{Future Work: Log Format}
 
-This section outlines a few dimensions in which the SSB log format could be extended to provide useful additional features.
+This section outlines a few dimensions in which the SSB log format --- SSB's ``thin waist'' --- could be modified to provide additional useful properties.
 
 \subsection{Partial Replication}
 
@@ -639,7 +600,7 @@ TODO help, I don't speak scientific crypto lingo
 
 Since SSB relies on multiple cryptographic primitives (signatures and hashes for the log format, encryption for the replication protocol), cryptographic agility~\cite{nelson2011crypto} is an essential concern. All hashes and signatures in the logs include an indicator of the cryptographic primitive that has been used. This means that the protocol can introduce the use of new primitives as old ones become broken.
 
-An open problem is how old log entries can be ``saved"" once their primitives become insecure. The naive approach of republishing old messages with a new key changes the hashes of all those messages, thus breaking inter-message references. Alternate approaches could be based on publishing new messages that assert facts about older messages, or determining the trustworthyness of old messages based on how they are being referenced.
+An open problem is how old log entries can be ``saved'' once their primitives become insecure. The naive approach of republishing old messages with a new key changes the hashes of all those messages, thus breaking inter-message references. Alternate approaches could be based on publishing new messages that assert facts about older messages, or determining the trustworthyness of old messages based on how they are being referenced.
 
 \subsection{Log Management}
 
@@ -685,6 +646,14 @@ To improve privacy, some servers choose to only forward messages of some feed $F
 
 In addition to publishing policies on who should get access to messages, encryption can be used to ensure that only the intended recipients can access the data. Currently, the only supported mechanism is encrypting a message to a small set of recipients. More sophisticated approaches such as encrypted groups could be adapted for ssb.
 
+\subsection{Content Moderation}
+
+The social nature of most applications buit on top of SSB necessitates some form of moderation features, allowing users to shape and regulate interactions such that they can feel safe in their virtual space. Because no user has a global view of the system, and because the subjective reader property allows even users with identical views to interpret those views in different ways, traditional centralized approaches for moderation can not be applied directly to ssb. In particular, it is not possible to globally ``ban'' an identity.
+
+Users (and applications on their behalf) have two fundamental options when dealing with unwanted content. They can stop replicating a feed and delete it from their local database. Less drastically, applications can choose to ignore specific (sets of) messages.
+
+While these are powerful primitives that give users full control over their environment, they place the burden on the affected individual. Going forward, it will be important to find mechanisms that allow to share the task of moderation and shift it to users who are privileged enough to be able to invest the necessary energy and time. A simple example could be to automatically adopt the \textit{block} messages of trusted peers. Since human dynamics are very nuanced and every human has their specific needs, we expect a lot of experimentations and different groups of users settling on different tools.
+
 \subsection{Causal Ordering}
 
 Whenever a message $m_1$ contains the hash of another message $m_2$, this implies that $m_2$ must have already existed at the point where $m_1$ was created. Taking the transitive closure of this irreflexive relation yields a strict partial order. For any pair of messages $m_1$, $m_2$, $m_2$ is guaranteed to be older than $m_2$ if $(m_1, m_2)$ is an element of this order. Equivalently this can be interpreted as the existence of a (directed) path from $m_2$ to $m_1$ on the graph with the set of all messages as vertices and edges corresponding to the hashes inside those messages.
@@ -695,14 +664,7 @@ Storing this transitive closure in a space-efficient way such that it can be qui
 
 The currently used default replication protocol does not protect against adversarial nodes, for example it would be fairly easy to launch an eclipse attack~\cite{singh2006eclipse} against the overlay network. But whereas it is difficult to defend against these attacks in general, SSB can make use of data such as the friend graph to protect against them. A \textit{follow} message can be interpreted as an expression of trust. Assuming that trusted peers are unlikely to perform an attack, keeping a certain number of trusted peers in the views of the peer sampling service would protect against eclipse attacks.
 
-Another area where the replication protocol could be improved is by using private set intersection when determining the set of feeds that both parties are interested in. That way, untrusted peers would not be able to learn about new ids purely from the replication layer. Combined with an access control mechanism that only forwards data to authorized identities, this would provide resilience against bots ``spidering"" the network.
-
-% - db layer: indexing
-% - message type coordination? schemas?
-%
-% - (delegating) moderation
-% - (delegating) forbidden blobs and messages (the latter assuming offchain-content)
-% - onboarding
+Another area where the replication protocol could be improved is by using private set intersection when determining the set of feeds that both parties are interested in. That way, untrusted peers would not be able to learn about new ids purely from the replication layer. Combined with an access control mechanism that only forwards data to authorized identities, this would provide resilience against bots ``spidering'' the network.
 
 % ----------------------------------------------------------------------
 \section{Conclusions}
