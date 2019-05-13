@@ -694,6 +694,20 @@ manifests can be used i.e., a datagram returned in lieu of the content
 which contains a sequence of names pointing to single Data packets (or
 further sub-manifests).
 
+\subsection{Layering or Merging of SSB and NDN}
+
+In this paper we examin whether NDN can be used as a transport network
+for SSB, whether a ``SSB-aware'' NDN layer would work better, and
+whether SSB could be used as a support for NDN networking and its
+applications. Figure~\cite{fig:ssb-and-ndn} shows the three different
+scenarios which we expand in the following subsections.
+
+\begin{figure}[htb]
+  \includegraphics[width=0.9\columnwidth]{figs/ssb-and-ndn.pdf}
+  \caption{\label{fig:ssb-and-ndn}Three different layerings of SSB and NDN,
+    as discussed in this paper}
+\end{figure}
+
 \subsection{SSB over NDN}
 
 SSB log entries, also limited to 4KB, map well to NDN if one
