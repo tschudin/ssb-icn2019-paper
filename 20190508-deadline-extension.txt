@@ -1,0 +1,91 @@
+From noreply@icn19.hotcrp.com Wed May  8 23:57:55 2019
+Date: Wed, 8 May 2019 23:57:52
+From: ACM ICN 2019 HotCRP <noreply@icn19.hotcrp.com>
+Reply-To: i.psaras@ucl.ac.uk, jtw@isi.edu
+To: Christian Tschudin <christian.tschudin@unibas.ch>
+Cc: i.psaras@ucl.ac.uk, jtw@isi.edu
+Subject: [ACM ICN 2019] Deadline extension for paper submission - #19 "Secure Scuttlebutt: An..."
+
+Dear Christian Tschudin,
+
+Thanks very much for registering your paper for the ACM ICN’19 conference.
+We’re enthusiastic about the conference program, and look forward to
+receiving your full paper submission!
+
+We’re writing to note two points that have recently come up in questions
+from potential authors and in reviewing early submissions - one about paper
+formatting and one about anonymity. We discuss these points briefly below.
+First, however, we would like to inform you of a short extension to the
+submission deadline to help you be sure these points are addressed.
+
+DEADLINE EXTENSION:
+
+To help you complete your paper comfortably while ensuring that you’re able
+to address these points, we are _extending_ the paper submission deadline
+to the end of the day Tuesday, May 14 Anywhere on Earth (AoE). Please be
+sure your paper is submitted by this deadline, as reviewing will begin
+immediately after.
+
+PAPER FORMATTING AND ANONYMITY CONSIDERATIONS:
+
+In preparing your full submission, please note the following:
+
+1) Paper Formatting: We've received several questions and comments about
+the intent of the paper formatting instructions posted with the CFP. To
+help clarify the objective of those instructions, we summarize here:
+
+a) The review copy of your paper should be formatted using the standard ACM
+conference paper template formatting, _except_ that you should use a 10
+point font. (Note that the standard ACM templates use 9 point.)
+
+b) For final copies of accepted papers, the ACM templates will be used “off
+the shelf”, with 9pt fonts. This will give you a little extra room in the
+final version of your paper to address reviewer comments, add clarifying
+detail, etc., leading to noticeably stronger papers overall.
+
+Some further information about paper formatting is given at the end of this
+email.
+
+
+2) Submission Anonymity: As you will recall the conference has switched to
+a policy of double blind reviewing this year. However we have received some
+early paper submissions that were not anonymized, but instead included
+author names and other identifying information as in past years.
+
+In preparing your final submission, _please_ be sure to note the
+information in the section labeled “Paper Anonymity” at
+https://conferences.sigcomm.org/acm-icn/2019/submissions.php, and anonymize
+your paper accordingly.
+
+Thank you again for your interest in ACM ICN’19, and please feel free to
+contact us at icn19-tpc@ee.ucl.ac.uk if you have further questions related
+to formatting or submitting your paper.
+
+
+       Title: Secure Scuttlebutt: An Information-Centric Protocol for
+              Subjective and Decentralized Community Applications
+       Site: https://icn19.hotcrp.com/paper/19
+
+- ACM ICN 2019 TPC Chairs
+John Wroclawski
+Ioannis Psaras
+----
+
+Further information about paper formatting:
+
+- Latex users: Both the current ACM standard templates at
+https://www.acm.org/publications/proceedings-template and the alternate
+template linked from the conference website
+(https://github.com/conference-websites/acmart-sigproc-template/blob/master/sample-sigconf.tex)
+includes all the required formatting setting.
+
+To request a 10pt font instead of the built-in 9pt in the default ACM
+template, you can use the command:
+
+\documentclass[10pt,sigconf]{acmart}
+
+at the top of your main .tex file.
+
+- MS Word users: The current version of the MS Word template linked from
+ACM’s website uses 9pt fonts. Please ensure that you change the body text
+font size to 10pt when utilizing this template.
