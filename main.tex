@@ -430,9 +430,9 @@ and the reduce action consists in accumulating the latest key-value
 pairs such that a more recent key-value pair replaces an older one if
 it was signed by the same author\_id. The size of the replicated logs,
 although locally stored, would lead to very long response times if the
-map-reduce would be executed at run-time. Instead, almost each
+map-reduce would be executed at render-time. Instead, almost each
 application will build indexes and aggressively cache state that was
-already aggregated. Should ever the indexes become corrupted
+already aggregated. Should the indexes ever become corrupted
 (e.g. because the user interface app crashed in the middle of a
 complex indexing step), they can be fully regenerated from scratch, an
 approach that has also become known as the Kappa architecture~\cite{}.
@@ -461,7 +461,7 @@ should do a topological sort based on the causality relationship with
 other posts and their replies. Insertion into the dependency graph may
 or may not lead to having to rerun the sort on the whole graph of
 postings. Clearly, the lack of a central server hosting the reference
-list of posts and being able to record a post's submissiontime, leads
+list of posts and being able to record a post's submission time, leads
 to more complex client software that must prepare for and defend
 against a broad range of adversarial data found in the logs.
 
@@ -486,7 +486,7 @@ delivery of update messages. Potentially, CRDTs permit to implement
 global data structures featuring eventual consistency without
 coordination effort (thus are fully scalable). The caveat here is that
 SSB peers do not necessarily see all involved peers due to their
-position in the social graph which controls replication and
+position in the social graph which controls replication wherefore
 consistency is always modulo that fact. For example, like counts will
 be eventually consistent with respect to the same set of followed
 peers but not globally, at least if they are directly counted. Other
@@ -495,8 +495,8 @@ that stems from beyond the circle of followed peer. More research is
 needed to understand the constraints brought by the combination of
 coordination-less interaction with partial log replication, but SSB's
 rich set of applications used on a daily basis is a encouraging sign
-that eventual consistency is a ``good enough'' basis for real
-decentralized services.
+that eventual consistency in combination with subjective replication
+is a ``good enough'' basis for real decentralized services.
 
 
 % Tangles intro: https://github.com/cn-uofbasel/ssbdrv/blob/master/doc/tangle.md
