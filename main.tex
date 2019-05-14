@@ -234,9 +234,13 @@ SSB defines a format for encoding the public keys of identities and the hashes o
 
 The precise, byte-for-byte definition of the json-based message encoding is given in \cite{ssb-spec-messages}.
 
+\subsection*{Replication}
+
 The principal function of SSB servers is to connect to other servers and exchange log updates. To do so, they maintain a point-to-point encrypted~\cite{tarr2015secrethandshake} overlay network over which they run a gossip protocol. When two servers start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a peer receives a lower sequence number for a feed than it sent, it transmits the log messages that the peer is lacking. If at a later point a new message of the feed becomes available to a server, it is automtically \textit{pushed} to the connected peers. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, maintained via the plumtree~\cite{leitao2007epidemic} protocol.
 
 In addition to this primary replication mechanism, SSB provides two other ways of exchanging information. {\em Blobs} are content-addressed pieces of data that are not part of any log. They are not widely disseminated automatically, but rather fetched on demand via a simple request-flooding protocol. {\em Out-of-order messages} are a similar mechanism to address and fetch log entries on demand via their hashes.
+
+\subsection*{Servers as Application Platforms}
 
 Beyond replicating logs and checking their validity, an SSB server offers an API to {\em SSB clients}. These can be arbitrary programs that issue RPCs to the server over an IPC mechanism. The exposed functionality includes writing to the author's log, reading from arbitrary logs, specifying which logs a server should replicate, and fetching blobs and out-of-order messages. SSB thus becomes a platform for building applications, encapsulating the complexity of data replication.
 
@@ -246,14 +250,19 @@ This example showcases a crucial property of SSB: Decisions about whom to replic
 
 Information stored in the log is also used to solve the problem of joining the overlay network: Authors can publish the static ip addresses of highly-available servers (called {\em pubs}) to their log. When a server needs to connect to the overlay, the responsible plugin can scan any available log for this information.
 
+\subsection*{A Layered Architecture}
+
 It is worth noticing that this architecture spans four independent layers of protocols. The most fundamental protocol is the message format. All peers need to agree on what consitutes identities, valid messages, and how to compute hashes to address messages and blobs. This is the "thin waist" of SSB (see figure~\ref{fig:waist}).
-Next is the specific mechanism by which servers exchange data. The default mechanism is one option, but alternative mechanisms such as distribution via a sneakernet could also be deployed. Different peers that do not share a common replication mechanism could still interact indirectly, as long as there are some servers that understand multiple replication protocols. The protocol by which a server serves its clients is independent from the previous procotols. And finally, the way that different clients might publish and interpret messages is again a separate affair.
 
 \begin{figure}[htb]
   \includegraphics[width=0.9\columnwidth]{figs/ssb-waist.pdf}
   \caption{Secure Scuttlebutt's protocol stack.}
   \label{fig:waist}
 \end{figure}
+
+Next is the specific mechanism by which servers exchange data. The default mechanism is one option, but alternative mechanisms such as distribution via a sneakernet could also be deployed. Different peers that do not share a common replication mechanism could still interact indirectly, as long as there are some servers that understand multiple replication protocols.
+
+The protocol by which a server serves its clients is fully independent from the previous procotols. And finally, the publishing and interpretation of data in the form of messages is again a separate affair.
 
 % ----------------------------------------------------------------------
 \section{Distributed Apps and Data Structures over SSB}
