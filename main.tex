@@ -39,6 +39,8 @@ TODO: Anonymize (can we cite the broadcast-only editorial regardless?)
 
 TODO: Update title to ``identity-centric'' rather than ``information-centric''?
 
+TODO: clean up terminology (feed/log/author/identity/id, server/device/node/peer/machine, message/data/entry, ``social graph'', subjectivity (subjective reader) as opposed to plurality (how to interpret messages))
+
 \begin{abstract}
   Secure Scuttlebutt (SSB) is a novel peer-to-peer information-centric
   event-sharing protocol and architecture for social apps. In this
@@ -217,7 +219,7 @@ Concretely, each message contains the following pieces of data:
 
 \item a claimed {\em timestamp} of when the message was created
 
-\item a {\em hash} indicator that specifies the concrete hash function that was used for the backlink
+\item a {\em hash} indicator that specifies the concrete hash function that was used to compute the backlink
 
 \item the {\em content} of the message
 
@@ -225,20 +227,20 @@ Concretely, each message contains the following pieces of data:
 
 \end{itemize}
 
-The {\em content} is a json object that must contain a message {\em type} string that serves as a hint for how the content should be interpreted. SSB enforces that the content is valid json.
+The {\em content} is a json object that must contain a {\em type} key that serves as a hint for how the content should be interpreted. SSB enforces that the content is valid json.
 Alternatively, the content can be a byte string of encrypted data, together with a tag that signifies which encryption algorithm was used.
 
 SSB defines a format for encoding the public keys of identities and the hashes of messages and blobs (see below) as strings. This allows applications to scan the content of messages for such references, e.g. in order to create database indices.
 
 The precise, byte-for-byte definition of the json-based message encoding is given in \cite{ssb-spec-messages}.
 
-The principal function of SSB servers is to connect to other servers and exchange log updates. To do so, they maintain a point-to-point encrypted~\cite{tarr2015secrethandshake} overlay network over which they run a gossip protocol. When two servers start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a peer receives a lower sequence number for a feed than it sent, it transmits the log messages that the peer is lacking. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, maintained via the plumtree~\cite{leitao2007epidemic} protocol.
+The principal function of SSB servers is to connect to other servers and exchange log updates. To do so, they maintain a point-to-point encrypted~\cite{tarr2015secrethandshake} overlay network over which they run a gossip protocol. When two servers start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a peer receives a lower sequence number for a feed than it sent, it transmits the log messages that the peer is lacking. If at a later point a new message of the feed becomes available to a server, it is automtically \textit{pushed} to the connected peers. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, maintained via the plumtree~\cite{leitao2007epidemic} protocol.
 
 In addition to this primary replication mechanism, SSB provides two other ways of exchanging information. {\em Blobs} are content-addressed pieces of data that are not part of any log. They are not widely disseminated automatically, but rather fetched on demand via a simple request-flooding protocol. {\em Out-of-order messages} are a similar mechanism to address and fetch log entries on demand via their hashes.
 
 Beyond replicating logs and checking their validity, an SSB server offers an API to {\em SSB clients}. These can be arbitrary programs that issue RPCs to the server over an IPC mechanism. The exposed functionality includes writing to the author's log, reading from arbitrary logs, specifying which logs a server should replicate, and fetching blobs and out-of-order messages. SSB thus becomes a platform for building applications, encapsulating the complexity of data replication.
 
-The reference implementation of SSB also includes a mechanism for loading {\em plugins} into the server to extend its functionality. There are a few default plugins, these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin scans the server's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the server to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph. Transitive replication can always be overridden via special {\em block} messages.
+The reference implementation of SSB also includes a mechanism for loading {\em plugins} into the server to extend its functionality. There are a few default plugins, conceptually these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin scans the server's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the server to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph. Transitive replication can always be overridden via special {\em block} messages.
 
 This example showcases a crucial property of SSB: Decisions about whom to replicate can be guided by the content of the very data that is replicated. By storing the relevant information inside the author's log (as opposed to a local database), other peers can also use this informtion to guide their decisions.
 
@@ -778,11 +780,11 @@ As an extreme case of partial replication, a feed could fetch a single specific 
 
 \cite{lipmaa1999secure} defines {\em head} and {\em tail} sets for each entry in an anti-monotone binary graph or a threaded authentication tree, such that the union of the heads and tails of any two messages includes all messages necessary to verify the newer message against the older one. These sets are of size logarithmic in the sequence number. As long nodes request and store these additional sets, trasitivity of replication is maintained even when partially replicating logs.
 
-An interesting problem in this context is how peers would indicate the subsets they want to replicate. While listing sequence numbers works fine, applications would benefit from utilizing semantic criteria instead, for example subscribing to only messages of certain types. Finding a general framework for specifying partial subscriptions based on semantic frameworks is an open problem.
+An interesting problem in this context is how peers would indicate the subsets of a feed they want to receive. Specifying individual sequence numbers works fine, but degrades to a pull-based system. To move back to a push-based architecture, is is necessary to characterize sets via certain properties. Subsets such as ``the messages with even sequence numbers'' are fairly useless, instead semantic criteria are needed, for example subscribing to only messages of certain types. Finding a general framework for specifying partial subscriptions based on semantic frameworks is an interesting task.
 
-One particular problem in this setting is that malicious peers could deliberately withhold a message even though it fits a particular semantic criterium. Unlike in sequence number based replication, there is no immediate way to detect such omissions. This could be mitigated by adding one additional sequence number per criterion to each message. This approach of however greatly limits the expressivity of the criteria specification mechanism. The example of subscribing to messages of a certain type would work fine: Each message would include a number indicating how many preceding messages of the same type are in the feed. But e.g. subscriptions based on arbitrary prefixes of types would require one sequence number {\em per character} of the message type, which could already be too costly. If there were multiple criteria and peers were able to select any number of them, the number of additional sequence numbers would be equal to the product of the number of sequence numbers of each criterium. Since this approach does not scale, it would be beneficial to find alternate mechanisms for detecting malicious ommissions of partially replicated feeds.
+One particular problem in this setting is that malicious peers could deliberately withhold a message even though it fits a particular semantic criterium. Unlike in sequence number based replication, there is no immediate way to detect such omissions. This could be mitigated by adding one additional sequence number per criterion to each message. This approach however greatly limits the expressivity of the criteria specification mechanism. The example of subscribing to messages of a certain type would work fine: Each message would include a number indicating how many preceding messages of the same type are in the feed. But e.g. subscriptions based on arbitrary prefixes of types would require one sequence number {\em per character} of the message type, which could already be too costly. If there were multiple criteria and peers were able to select any number of them, the number of additional sequence numbers would be equal to the product of the number of sequence numbers of each criterium. Since this approach does not scale, it would be beneficial to find alternate mechanisms for detecting malicious ommissions of partially replicated feeds.
 
-Due to the above problems, it might often make sense to define an application-specific partially-replicable log format rather than opting for a general-purpose application framework like SSB. When designing such a framework, it is important to keep in mind that partial replication and subscriptions increase the complexity of the API offered to the applications.
+Due to the above problems, it might often make sense to define an application-specific partially-replicable log format rather than opting for a general-purpose application framework like SSB. When designing such a framework, it is also important to keep in mind that partial replication and subscriptions increase the complexity of the API offered to the applications.
 
 \subsection{Local Deletion}
 
@@ -790,7 +792,7 @@ SSB includes the full content data in its message signatures. Accordingly, the c
 
 This situation could be improved by only including a {\em hash} of the content in the signature, rather than the content itself. This way, content could be deleted from a local log replica, while keeping the hash, so that the whole log could still be verified and thus replicated.
 
-This change does slightly increase the complexity of log replication and the API between server and clients: Missing message content introduces a new case, whereas in current SSB a message is either missing or completely avaiable.
+This change does slightly increase the complexity of log replication and the API between server and clients: Missing message content introduces a new case, whereas in current SSB a message is either available or not.
 
 It should be noted that in current SSB, blobs support both local deletion and targeted replication. In a protocol with both partial replication and local deletion, there would be no need to rely on blobs for these properties. Messages essentially become blobs where authorship and relative ordering can be verified.
 
@@ -814,17 +816,20 @@ Additionally, messages should more clearly separate integrity metadata (backlink
 
 \subsection{Fundamental Changes}
 
-The previously mentioned changes to the log format would all result in protocols that would function in basically the same way as SSB. But it is also possible to envision some little changes that would result in systems with fundamentally different behavior. An incomplete list of interesting ideas:
+The previously presented changes would still result in protocols based on replicated append-only logs. But those are not the only push-based, indentity-centric systems one can imagine. An incomplete list of small tweaks that would result in fundamentally different system:
 
 \begin{itemize}
   \item introducing a mechanism to "merge" forked feeds rather than discarding them
-  \item using different data structures than linked lists as feeds, e.g. sets, maps, trees or directed-acyclic graphs
+  \item using different data structures than linked lists as feeds, e.g. sets, maps, trees or directed acyclic graphs
   \item making the protocol aware of application-level semantics to support lossy but semantics-preserving log compaction
+  \item adressing messages by a pair of author and sequence number, unlike hash-based addressing this allows cyclic references
 \end{itemize}
 
-The design space for systems of identity-centric data replication is vast and not well explored. SSB only occupies a tiny fraction of it.
+The design space for systems of identity-centric data replication is vast and not well explored. SSB only occupies a small location in it.
 
 \section{Future Work: Userspace}
+
+TODO: That's not a good introduction...
 
 Beyond protocol-level evolution, there are a couple of higher-level issues that often arise when designing applications on top of SSB. This section gives an overview over the most common ones and sketches potential approaches.
 
@@ -848,7 +853,7 @@ In addition to publishing policies on who should get access to messages, encrypt
 
 \subsection{Content Moderation}
 
-The social nature of most applications buit on top of SSB necessitates some form of moderation features, allowing users to shape and regulate interactions such that they can feel safe in their virtual space. Because no user has a global view of the system, and because the subjective reader property allows even users with identical views to interpret those views in different ways, traditional centralized approaches for moderation can not be applied directly to ssb. In particular, it is not possible to globally ``ban'' an identity.
+The social nature of most applications buit on top of SSB necessitates some form of moderation features, allowing users to shape and regulate interactions such that they can feel safe in their virtual space. Because no user has a global view of the system, and because even users with identical views could interpret those views in different ways, traditional centralized approaches for moderation can not be applied directly to ssb. In particular, it is not possible to globally ``ban'' an identity.
 
 Users (and applications on their behalf) have two fundamental options when dealing with unwanted content. They can stop replicating a feed and delete it from their local database. Less drastically, applications can choose to ignore specific (sets of) messages.
 
@@ -856,43 +861,47 @@ While these are powerful primitives that give users full control over their envi
 
 \subsection{Causal Ordering}
 
+TODO: Does this really contribute to the paper, or am I just showing off?
+
 Whenever a message $m_1$ contains the hash of another message $m_2$, this implies that $m_2$ must have already existed at the point where $m_1$ was created. Taking the transitive closure of this irreflexive relation yields a strict partial order. For any pair of messages $m_1$, $m_2$, $m_2$ is guaranteed to be older than $m_2$ if $(m_1, m_2)$ is an element of this order. Equivalently this can be interpreted as the existence of a (directed) path from $m_2$ to $m_1$ on the graph with the set of all messages as vertices and edges corresponding to the hashes inside those messages.
 
 Storing this transitive closure in a space-efficient way such that it can be quickly queried and efficiently updated is a difficult but well-studied problem in the database literature~\cite{jin2012scarab}~\cite{yildirim2013dagger}. It should be possible to leverage some properties of SSB to get higher-quality results. The immutability of messages reduces the number of cases when dynamically maintaining the index structure, and the fact that each feed forms a total order can be utilized to efficiently encode the relation. Designing and implementing a general framework for performing causal ordering queries on SSB messages would be both an interesting research topic and a powerful tool for building applications.
 
 \subsection{Replication Improvements}
 
-The currently used default replication protocol does not protect against adversarial nodes, for example it would be fairly easy to launch an eclipse attack~\cite{singh2006eclipse} against the overlay network. But whereas it is difficult to defend against these attacks in general, SSB can make use of data such as the friend graph to protect against them. A \textit{follow} message can be interpreted as an expression of trust. Assuming that trusted peers are unlikely to perform an attack, keeping a certain number of trusted peers in the views of the peer sampling service would protect against eclipse attacks.
+The currently used gossip-based default replication protocol does not protect against adversarial nodes, for example it would be fairly easy to launch an eclipse attack~\cite{singh2006eclipse} against the overlay network. But whereas it is difficult to defend against these attacks in general, SSB can make use of data such as the friend graph to protect against them. A \textit{follow} message can be interpreted as an expression of trust. Assuming that trusted peers are unlikely to perform an attack, keeping a certain number of trusted peers in the views of the peer sampling service would protect against eclipse attacks.
 
 Another area where the replication protocol could be improved is by using private set intersection when determining the set of feeds that both parties are interested in. That way, untrusted peers would not be able to learn about new ids purely from the replication layer. Combined with an access control mechanism that only forwards data to authorized identities, this would provide resilience against bots ``spidering'' the network.
 
 TODO mention alternative models (indexing-in-the-cloud, lite clients) here?
 
-TODO talk about alternative message addressing (author + seqnum, (a)cyclicity issues)
-
-TODO Naming (!)
+TODO Naming?
 
 % ----------------------------------------------------------------------
 \section{``SSB pain points'', limitations (analysis / critical review)}
 
 TODO: This is fairly "close to the metal". An alternative approach could focus on limits of identity-centricity as opposed to icn and point-to-point.
 
+TODO: proper introduction
+
 The approach chosen by SSB is not unproblematic. First and foremost, it has strong implications for privacy.
 
 SSB is an inherently pseudonymous system, anonymity is fundamentally incompatile with identity-centric message propagation. Furthermore, the architecture discourages short-lived pseudonyms, favoring the creation of a rather stable network of trust to guide replication. Since all messages are signed, they are not refutable. Finally, all messages are immutable.
 
-The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The act of publishing messages is a risky one, reserved to those who hold a lot of privilege. The risks can be reduced by taking care that pseudonyms can not be traced to physical identity, compartmentalizing pseudonyms, using ecryption, and only propagating the messages to trusted parties. Yet the fundamental risk can never be fully mitigated. Consequently, applications must cleary inform users about the peculiarities of the virtual space they participate in.
+The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The act of publishing messages is a risky one, reserved to those who hold a lot of privilege. The risks can be reduced by taking care that pseudonyms can not be traced to physical identity, compartmentalizing pseudonyms, using encryption, and only giving the messages to trusted parties. Yet the fundamental risk can never be fully mitigated. Consequently, applications must cleary inform users about the peculiarities of the virtual space they participate in.
 
-The pull-only approach of SSB also poses some challenges when onboarding new users. Nobody will pull in their messages, they won't be propagated through the network. The SSB community uses multiple approaches to solve this problem. Pubs can issue \textit{invite codes}. When a user sends such a code to the pub, the pub automatically follows the user, requesting their messages in the process. Invite codes can be distributed out-of-band (commonly through websites, but also on physical pieces of papers). In addition to pubs, the reference server uses lan multicast to discover earby peers. This allows local onboarding where an established user can follow a new user in the same lan. The \textit{manyverse} application uses yet another mechanism, it provides a global DHT to help with onboarding.
+The pull-only approach of SSB also poses some challenges when onboarding new users. Nobody will pull in their messages, they won't be propagated through the network. The SSB community uses multiple approaches to solve this problem. Pubs can issue \textit{invite codes}. When a user sends such a code to the pub, the pub automatically follows the user, requesting their messages in the process. Invite codes can be distributed out-of-band (commonly through websites, but also on physical pieces of papers). As an additional onboarding mechanism, the reference server uses lan multicast to discover earby peers. This allows local onboarding where an established user can follow a new user in the same lan. The \textit{manyverse} application uses yet another mechanism, it provides a global DHT to connect users.
 
 The \textit{type} field of SSB messages can be regarded as a global resource without any central coordination regarding its usage. In the worst case, this can lead to multiple applications using the same \textit{type} but in incompatible ways. To mitigate this risk, applications are encouraged to namespace types (comparable to e.g. Java package naming guidelines). An alternative are large random type strings. In particular, a \textit{type} could be the hash of a message that describes the intention behind that \textit{type}.
 
-Non-interoperable \textit{types} are a very tangible symptom of a broader theme, the subjective interpretation of message contents. Taken to an extreme, the community of SSB users could splinter into a multitude of mutually non-understanding fractions that use different kinds of messages or interpretations thereof. Whether the fact that the protocol allows such a divergence is actually a negative property is up for debate --- the system has been deliberately designed this way. But this approach certainly runs counter to the philosophy behind more rigid, centralized systems.
+Non-interoperable \textit{types} are a very tangible symptom of a broader theme, the \textit{plurality} of interpretationa of message contents. Taken to an extreme, the community of SSB users could splinter into a multitude of mutually non-understanding fractions that use different kinds of messages or interpretations thereof. Whether the fact that the protocol allows such a divergence is actually a negative property is up for debate --- the system has been deliberately designed this way. But this approach certainly runs counter to the philosophy behind more rigid, centralized systems.
 
 A more pragmatic problem is that of scalability: To support replication, full logs have to be stored. While this could be mitigated through mechanisms of partial replication, it is still necessary to store a potentially unbounded number of messages. This boils down to the general fact that all data that is to be propagated needs to be stored \textit{somewhere}. But SSB has stronger expactations about what should be stored than other protocols.
 
-TODO?
+TODO?:
+
 SLAs (service level agreements, ``peer quality'') (more of a general p2p problem and not mandated by ssb, thus out of scope here?)
+
 While subjectivity and concurrency are great to keep the protocol simple, one could argue that the complexity is merely pushed to the application developer, who is usually the person to *shield* from complexity
 
 TODO These are already covered in the future work section. Mention them anyways?:
@@ -926,13 +935,13 @@ TODO this might be a good place for mentioning encryption?
 
 By leveraging trust instead of trying to eliminate it, there is no need for proof-of-work and similar wasteful techniques. The delay tolerance allows routing layers that can optimize for efficient usage of resources rather than going for minimal latency at any cost. This mentality could go a long way towards systems that are more sustainable than current alternatives. And there are strong arguments that favoring systems that try to eradicate inter-human trust might not lead to a particularly desirable future.
 
-The freedom of applications to interpret data in whatever way they see fit reduces the ability of centralized powers to coerce users. Furthermore, the usage of json as a common, self-describing data format prevents information being ``closed in''. Rather than depending on a proprietary API, interoperability and the ability to create alternative frontends is the default. This also leads to sharing of data between applications. For example, the `{\small\tt about}' information (Section~\ref{sect:XX}) can be reused by all programs, freeing implementors from duplicating work and creating a coherent user experience across apps.
-
 Due to the ``subjective reader'' approach, all ssb servers can operate concurrently. There is no need for costly synchronization across nodes. Applications can fully embrace this, for example by using CRDTs. The monotonically growing logs are well-suited for implementing CRDTs and similar techniques.
+
+The freedom of applications to interpret data in whatever way they see fit reduces the ability of centralized powers to coerce users. Furthermore, the usage of json as a common, self-describing data format prevents information being ``closed in''. Rather than depending on a proprietary API, interoperability and the ability to create alternative frontends is the default. This also leads to sharing of data between applications. For example, the `{\small\tt about}' information (Section~\ref{sect:XX}) can be reused by all programs, freeing implementors from duplicating work and creating a coherent user experience across apps.
 
 As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features. Applications can simply start producing new kinds of messages, and interoperability works out with all users who share the same interpretation of those messages. Especially when evolving functionality, it is often sufficient to add more entries to a json object. Other applications simply ignore them but will continue working.
 
-This results in an organic evolution of features, without ``the system'' ever shutting down. Like any uncoordinated evolutionary process, the end result might not be as streamlined as a shiny, pre-designed solution. But unlike many such proposed, streamlined systems, the continuous and incremental improvement of the SSB ecosystem has resulted in a thriving ecosystem that serves the needs of thousands of users. And it will continue to evolve.
+This results in an organic evolution of features, without ``the system'' ever shutting down. Like any uncoordinated evolutionary process, the end result might not be as streamlined as a shiny, pre-designed solution. But unlike many such proposed, streamlined systems, the continuous and incremental improvement of SSB applications has resulted in a thriving ecosystem that serves the needs of thousands of users. And it will continue to evolve.
 
 TODO is this \textit{too} political/opinionated? Or not political \textit{enough}? We really need that ``sociological computer science'' journal... Feel free to tone this section down. But damn, writing those words \textit{felt good}!
 
@@ -945,6 +954,8 @@ TODO explicitly mention privacy challenges, stress that there are many settings 
 
 TODO bottom line: identity-centric replication as a new paradigm introduces a unique set of trade-offs and is well worth exploring further
 
+Position identity-centric (push) replication as inherently more decentralized?
+
 \ldots
 
 % ----------------------------------------------------------------------
@@ -953,4 +964,3 @@ TODO bottom line: identity-centric replication as a new paradigm introduces a un
 \bibliography{main}
 
 \end{document}
-
