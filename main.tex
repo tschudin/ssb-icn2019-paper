@@ -78,7 +78,7 @@ movement''~\cite{decent-2018-aug} is the most visible technical
 response to this critique, pointing out implementation alternatives.
 
 One of these alternatives is a project called Secure Scuttlebutt (SSB)
-that started in 2012. After several iterations of protocol design and
+that started in 2014. After several iterations of protocol design and
 implementation, SSB has become a stable service for over 10,000 users
 offering them rich media community applications with strong
 cryptographic protection (end-to-end encryption and metadata privacy)
@@ -196,7 +196,7 @@ service.
 
 In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. Since anybody can generate a random keypair with very low probability of multiple peers generating the same keypair, no central authority is necessary for introducing users to the system.
 
-The single-writer append-only logs of SSB consist of {\em messages} that include a {\em backlink}: The cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blogchain is that each user maintains their own log and cryptographically signs all their messages. Messages whose backlink points to a message in a different log (i.e. from a different author) are considered invalid.
+The single-writer append-only logs of SSB consist of {\em messages} that include a {\em backlink}: The cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blockchain is that each user maintains their own log and cryptographically signs all their messages. Messages whose backlink points to a message in a different log (i.e. from a different author) are considered invalid.
 
 These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB server checks that every message has exactly zero or one incoming backlinks. If it has more than one, the feed is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log can not be appended to anymore.
 
@@ -227,7 +227,7 @@ SSB defines a format for encoding the public keys of identities and the hashes o
 
 The precise, byte-for-byte definition of the json-based message encoding is given in \cite{ssb-spec-messages}.
 
-The principal function of SSB servers is to connect to other servers and exchange log updates. To do so, they maintain an end-to-end encrypted overlay network over which they run a gossip protocol. When two servers start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a peer receives a lower sequence number for a feed than it sent, it transmits the log messages that the peer is lacking. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, maintained via the plumtree~\cite{leitao2007epidemic} protocol.
+The principal function of SSB servers is to connect to other servers and exchange log updates. To do so, they maintain a point-to-point encrypted~\cite{tarr2015secrethandshake} overlay network over which they run a gossip protocol. When two servers start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a peer receives a lower sequence number for a feed than it sent, it transmits the log messages that the peer is lacking. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, maintained via the plumtree~\cite{leitao2007epidemic} protocol.
 
 In addition to this primary replication mechanism, SSB provides two other ways of exchanging information. {\em Blobs} are content-addressed pieces of data that are not part of any log. They are not widely disseminated automatically, but rather fetched on demand via a simple request-flooding protocol. {\em Out-of-order messages} are a similar mechanism to address and fetch log entries on demand via their hashes.
 
@@ -562,6 +562,8 @@ Another area where the replication protocol could be improved is by using privat
 TODO mention alternative models (indexing-in-the-cloud, lite clients) here?
 
 TODO talk about alternative message addressing (author + seqnum, (a)cyclicity issues)
+
+TODO Naming (!)
 
 % ----------------------------------------------------------------------
 \section{``SSB pain points'', limitations (analysis / critical review)}
