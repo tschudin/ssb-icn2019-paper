@@ -950,13 +950,7 @@ TODO is this \textit{too} political/opinionated? Or not political \textit{enough
 
 We presented secure scuttlebutt, a fully decentralized, peer-to-peer event-sharing protocol. The core novelty is that data replication occurs at the granularity of complete append-only logs of messages by a particular author. This approach leads to a simple, yet efficient replication protocol that lends itself well to a large class of applications. By embracing \textit{eventual} delivery and subjective interpretation of data, SSB gets to sidestep common sources of complexity. A community of multiple thousand users interacting through a variety of different applications confirms the viability of the approach.
 
-TODO explicitly mention privacy challenges, stress that there are many settings where SSB is inappropriate due to inherent (?) privacy problems
-
-TODO bottom line: identity-centric replication as a new paradigm introduces a unique set of trade-offs and is well worth exploring further
-
-Position identity-centric (push) replication as inherently more decentralized?
-
-\ldots
+The comparison with NDN shows that SSB's paradigm of push-based, identity-centric data transfer comes with a different set of tradeoffs than NDN's choice of pull-based, information-centric data transfer. Focussing on identities leads to challenges with respect to user privacy, but it also enables elegant, decentralized solutions to common problems with information-centric systems. Whether in the context of SSB or more generally, we believe that further study of identity-centric systems will lead to valuable insights and designs.
 
 % ----------------------------------------------------------------------
 
