@@ -561,6 +561,39 @@ Another area where the replication protocol could be improved is by using privat
 
 TODO mention alternative models (indexing-in-the-cloud, lite clients) here?
 
+TODO talk about alternative message addressing (author + seqnum, (a)cyclicity issues)
+
+% ----------------------------------------------------------------------
+\section{``SSB pain points'', limitations (analysis / critical review)}
+
+TODO: This is fairly "close to the metal". An alternative approach could focus on limits of identity-centricity as opposed to icn and point-to-point.
+
+The approach chosen by SSB is not unproblematic. First and foremost, it has strong implications for privacy.
+
+SSB is an inherently pseudonymous system, anonymity is fundamentally incompatile with identity-centric message propagation. Furthermore, the architecture discourages short-lived pseudonyms, favoring the creation of a rather stable network of trust to guide replication. Since all messages are signed, they are not refutable. Finally, all messages are immutable.
+
+The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The act of publishing messages is a risky one, reserved to those who hold a lot of privilege. The risks can be reduced by taking care that pseudonyms can not be traced to physical identity, compartmentalizing pseudonyms, using ecryption, and only propagating the messages to trusted parties. Yet the fundamental risk can never be fully mitigated. Consequently, applications must cleary inform users about the peculiarities of the virtual space they participate in.
+
+The pull-only approach of SSB also poses some challenges when onboarding new users. Nobody will pull in their messages, they won't be propagated through the network. The SSB community uses multiple approaches to solve this problem. Pubs can issue \textit{invite codes}. When a user sends such a code to the pub, the pub automatically follows the user, requesting their messages in the process. Invite codes can be distributed out-of-band (commonly through websites, but also on physical pieces of papers). In addition to pubs, the reference server uses lan multicast to discover earby peers. This allows local onboarding where an established user can follow a new user in the same lan. The \textit{manyverse} application uses yet another mechanism, it provides a global DHT to help with onboarding.
+
+The \textit{type} field of SSB messages can be regarded as a global resource without any central coordination regarding its usage. In the worst case, this can lead to multiple applications using the same \textit{type} but in incompatible ways. To mitigate this risk, applications are encouraged to namespace types (comparable to e.g. Java package naming guidelines). An alternative are large random type strings. In particular, a \textit{type} could be the hash of a message that describes the intention behind that \textit{type}.
+
+Non-interoperable \textit{types} are a very tangible symptom of a broader theme, the subjective interpretation of message contents. Taken to an extreme, the community of SSB users could splinter into a multitude of mutually non-understanding fractions that use different kinds of messages or interpretations thereof. Whether the fact that the protocol allows such a divergence is actually a negative property is up for debate --- the system has been deliberately designed this way. But this approach certainly runs counter to the philosophy behind more rigid, centralized systems.
+
+A more pragmatic problem is that of scalability: To support replication, full logs have to be stored. While this could be mitigated through mechanisms of partial replication, it is still necessary to store a potentially unbounded number of messages. This boils down to the general fact that all data that is to be propagated needs to be stored \textit{somewhere}. But SSB has stronger expactations about what should be stored than other protocols.
+
+% TODO?
+% SLAs (service level agreements, ``peer quality'') (more of a general p2p problem and not mandated by ssb, thus out of scope here?)
+% While subjectivity and concurrency are great to keep the protocol simple, one could argue that the complexity is merely pushed to the application developer, who is usually the person to *shield* from complexity
+
+% TODO These are already covered in the future work section. Mention them anyways?:
+%
+% - re-keying, forward secrecy
+% - routing and scalability
+% - protocol agility (binary msg format, crypto)
+% - deleting content, gdpr, ephemeral content
+% - multi-device
+
 % ----------------------------------------------------------------------
 \section{``SSB success stories''/Benefits}
 
@@ -569,6 +602,8 @@ TODO rename the section. Merge this and the pain-points into a single section?
 TODO introduce the section
 
 TODO touch on encryption (as usual, Alj is uncomfortable writing about crypto)
+
+TODO resistence against sybil attacks (note that the particular mechanism for what to pull in is not hard-coded)
 
 An often stated mantra in SSB development is ``no global singletons''. SSB is thus a fully decentralized system, or more accurately a collection of decentralized systems that overlap to varying degrees. It is consequently highly resilient to (targeted) failures, users do not need to depend on any single, priviledged central authority, including cloud-based service providers. Going beyond the common mentality of a grand unified social platform, there are deliberately isolated networks, for example limited to a family, or a specific local area network.
 
@@ -581,7 +616,7 @@ Continuing with the theme of resilience, data loss is highly unlikely, since ful
 
 By leveraging trust instead of trying to eliminate it, there is no need for proof-of-work and similar wasteful techniques. The delay tolerance allows routing layers that can optimize for efficient usage of resources rather than going for minimal latency at any cost. This mentality could go a long way towards systems that are more sustainable than current alternatives. And there are strong arguments that favoring systems that try to eradicate inter-human trust might not lead to a particularly desirable future.
 
-The freedom of applications to interpret data in whatever way they see fit reduces the ability of centralized powers to coerce users. Furthermore, the usage of json as a common, self-describing data format prevents information being ``closed in''. Rather than depending on a proprietary API, interoperability and the ability to create alternative frontends is the default.
+The freedom of applications to interpret data in whatever way they see fit reduces the ability of centralized powers to coerce users. Furthermore, the usage of json as a common, self-describing data format prevents information being ``closed in''. Rather than depending on a proprietary API, interoperability and the ability to create alternative frontends is the default. This also leads to sharing of data between applications. For example, the `{\small\tt about}' information (Section~\ref{sect:XX}) can be reused by all programs, freeing implementors from duplicating work and creating a coherent user experience across apps.
 
 Due to the ``subjective reader'' approach, all ssb servers can operate concurrently. There is no need for costly synchronization across nodes. Applications can fully embrace this, for example by using CRDTs. The monotonically growing logs are well-suited for implementing CRDTs and similar techniques.
 
@@ -590,68 +625,6 @@ As another consequence of the subjective interpretation of data, there is no nee
 This results in an organic evolution of features, without ``the system'' ever shutting down. Like any uncoordinated evolutionary process, the end result might not be as streamlined as a shiny, pre-designed solution. But unlike many such proposed, streamlined systems, the continuous and incremental improvement of the SSB ecosystem has resulted in a thriving ecosystem that serves the needs of thousands of users. And it will continue to evolve.
 
 TODO is this \textit{too} political/opinionated? Or not political \textit{enough}? We really need that ``sociological computer science'' journal... Feel free to tone this section down. But damn, writing those words \textit{felt good}!
-
-TODO another benefit: Data can automatically be reused across apps - frees devs from reimplementing identity management etc. again and again, leads to a very coherent user experience
-
-
-% ----------------------------------------------------------------------
-\section{``SSB pain points'', limitations (analysis / critical review)}
-
-\subsection{Onboarding}
-
-\subsection{Crypto}
-
-re-keying peers, forward secrecy
-
-\subsection{Trusting Pubs}
-
-Pubs will see your complete social graph, you have to trust them. If
-pub is operated in the cloud, then its private key is difficult to
-protect (= potentially accessible to the cloud provider),
-
-\subsection{Routing and Scalability}
-
-\subsection{Protocol Agility}
-
-binary msg format, crypto
-
-\subsection{Resource attacks}
-e.g. easy to follow a clique of peers that has been setup for DoS
-reasons (with humongous logs), victims will include them in the 2-hop
-neighborhood, difficult to automatically block (detecting the shape of
-the clique, clique members added faster than victims can remove them).
-
-\subsection{Deleting content, GDPR, ephemeral content}
-
-\subsection{SLA for Blobs, privacy of blob transfer}
-
-\subsection{Scaling}
-
-Pubs may experience scaling problems: unlike routers, an SSB pub can
-not rely on queues (and taildrop) to postpone work: has to store all
-logs of all 2hop neighbors. Social graph of a pub may grow too big (X
-times 100 new nodes per new user, on average?). Currently no policy to
-randomly drop logs? If too many pubs drop the log of a specific peer,
-this peer may ``loose SSB-connectivity'', fall out of the social
-graph, technically?
-
-\subsection{KawaiiPunk's critique}
-
-\subsection{Problem of multi-device peers}
-
-\subsection{Global (thus central) coordination needed of 'type' field
-  name space, applies also  to other fields at the SSB waist (e.g. new
-  crypto algos)}
-
-\subsection{Unfriending pubs}
-
-danger of splintering into mutually non-understanding fractions by using different messages (or even worse interpreting messages in different ways)
-
-While subjectivity and concurrency are great to keep the protocol simple, one could argue that the complexity is merely pushed to the application developer, who is usually the peron to *shield* from complexity
-
-SSB requires users to shift their perspective, treating ssb apps like ``regular'' apps leads to unfortunate consequences. Immutability in particular.
-
-\ldots
 
 % ----------------------------------------------------------------------
 \section{Related Work}
@@ -676,7 +649,7 @@ Also contrast with the decentralization provided by blockchains?
 
 We presented secure scuttlebutt, a fully decentralized, peer-to-peer event-sharing protocol. The core novelty is that data replication occurs at the granularity of complete append-only logs of messages by a particular author. This approach leads to a simple, yet efficient replication protocol that lends itself well to a large class of applications. By embracing \textit{eventual} delivery and subjective interpretation of data, SSB gets to sidestep common sources of complexity. A community of multiple thousand users interacting through a variety of different applications confirms the viability of the approach.
 
-TODO explicitly mention privacy challenges
+TODO explicitly mention privacy challenges, stress that there are many settings where SSB is inappropriate due to inherent (?) privacy problems
 
 TODO bottom line: identity-centric replication as a new paradigm introduces a unique set of trade-offs and is well worth exploring further
 
