@@ -410,31 +410,106 @@ and working mostly voluntarily, could produce alternative applications that
 work well enough to be used daily suggests the SSB communication model does
 make the implementation of common social applications simpler.
 
-\subsection{Kappa architecture}
+\subsection{Running Distributed Applications over Replicated Logs}
 
-(Heavy) indexing effort, necessary for slicing logs on a per-app basis
-and computing the state of data structures by ``summing up'' updates
-through all logs (see for example the above ``about'' app).
+``Infrastructure-less'' distributed application as presented above
+become possible because central servers can be fully replaced by each
+peer working on its local set of replicated logs. In this subsection
+we discuss the particularity of this approach and its constraints.
 
-Overview: https://milinda.pathirage.org/kappa-architecture.com/
-Read above related work and provide a discussion of similarities and differences with SSB
+A common pattern of SSB's applications is that they heavily rely
+on local database support for organizing the data contained in the logs.
+Typically a map-reduce strategy is used where the map phase filters
+the logs and the reduce actions computes the latest application state.
 
-\subsection{Tangles, consensus, synchronization}
+In the user directory application (Sect.~\ref{}), the filtering is
+done by selecting only {\tt about} entries for a specific target ID
+and the reduce action consists in accumulating the latest key-value
+pairs such that a more recent key-value pair replaces an older one if
+it was signed by the same author\_id. The size of the replicated logs,
+although locally stored, would lead to very long response times if the
+map-reduce would be executed at run-time. Instead, almost each
+application will build indexes and aggressively cache state that was
+already aggregated. Should ever the indexes become corrupted
+(e.g. because the user interface app crashed in the middle of a
+complex indexing step), they can be fully regenerated from scratch, an
+approach that has also become known as the Kappa architecture~\cite{}.
+
+An important aspect is whether the reduction step can be done in an
+incremental fashion by reusing previously computed application state.
+For example, counting the ``likes'' that a post receives works fine:
+incoming log extensions are indexed and if they are of the like type,
+the counter corresponding to the referenced message in incremented.
+
+Other applications, however, may need a {\em full} re-evalution of the
+reduce function each time the underlying index changes. An example for
+this case is the sequence of post messages: if some peer was added to
+the set of followed peers, its log gets incrementally replicated, and
+so are the posts of this peer. For each incoming new post, which may
+have been written very long ago, one has to insert it at the right
+place. This problem is shown in Figure~\ref{}.
+
+FIG
+
+A simple solution (adopted in some SSB client software) is to use the
+timestamp claimed by the author of the post, and in this case one can
+reuse the existing time-sorted list and insert the new post. However,
+because an author could lie about the timestamp, the reduce function
+should do a topological sort based on the causality relationship with
+other posts and their replies. Insertion into the dependency graph may
+or may not lead to having to rerun the sort on the whole graph of
+postings. Clearly, the lack of a central server hosting the reference
+list of posts and being able to record a post's submissiontime, leads
+to more complex client software that must prepare for and defend
+against a broad range of adversarial data found in the logs.
+
+
+\subsection{Synchronization and Eventual Consistency}
 \label{Section:Tangle}
 
-Tangles intro: https://github.com/cn-uofbasel/ssbdrv/blob/master/doc/tangle.md
+SSB's basic log replication service synchronizes peers in a consistent
+way: due to the hash chaining, events (represented by log entries)
+will be delivered in the order they happened and replica content will
+be consistent. This does not instantly lead to consistent shared data
+structures, though, if the corresponding events are spread over
+multiple logs. Instead, the natural guarantee is that of {\em eventual
+  consistency} where all peers will see the same reduced application
+state (if they share the same log set) after sufficient replication
+progress.
 
-Eventual consensus?
+Eventual consistency is the hallmark of Conflict-free Replicated Data
+Types (CRDTs, see~\cite{}) which are directly applicable to the SSB
+setting as they only assume a reliable and (sometimes) in-order
+delivery of update messages. Potentially, CRDTs permit to implement
+global data structures featuring eventual consistency without
+coordination effort (thus are fully scalable). The caveat here is that
+SSB peers do not necessarily see all involved peers due to their
+position in the social graph which controls replication and
+consistency is always modulo that fact. For example, like counts will
+be eventually consistent with respect to the same set of followed
+peers but not globally, at least if they are directly counted. Other
+applications relying on reduction via set union may learn from state
+that stems from beyond the circle of followed peer. More research is
+needed to understand the constraints brought by the combination of
+coordination-less interaction with partial log replication, but SSB's
+rich set of applications used on a daily basis is a encouraging sign
+that eventual consistency is a ``good enough'' basis for real
+decentralized services.
 
-For all application examples presented in Section~\ref{Section:AppProfiles},
-the design decisions in most cases assumed a really high-level of shared trust
-between users/developers, which simplified the implementation and enabled a
-faster bootstrap of useful applications with limited development resources, as
-most of the work has been done voluntarily or self-funded so far. The community
-fully understands that causal ordering and well-defined data structures based
-on Tangles~(Section~\ref{Section:Tangle}) would make the implementations more
-robust in contexts with lower levels of trust and is currently in the process
-of adopting them to make the applications more robust.
+
+% Tangles intro: https://github.com/cn-uofbasel/ssbdrv/blob/master/doc/tangle.md
+
+% Eventual consensus?
+
+% For all application examples presented in Section~\ref{Section:AppProfiles},
+% the design decisions in most cases assumed a really high-level of shared trust
+% between users/developers, which simplified the implementation and enabled a
+% faster bootstrap of useful applications with limited development resources, as
+% most of the work has been done voluntarily or self-funded so far. The community
+f% ully understands that causal ordering and well-defined data structures based
+o% n Tangles~(Section~\ref{Section:Tangle}) would make the implementations more
+% robust in contexts with lower levels of trust and is currently in the process
+% of adopting them to make the applications more robust.
 
 % ----------------------------------------------------------------------
 \section{Comparing SSB with Named Data Networking (NDN)}
