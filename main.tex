@@ -400,19 +400,19 @@ timestamps however, some client implementations have started using the time at
 which message updates are \textit{received}, then disambiguate using the
 self-stated creation time.
 
-\textit{Scuttle-poll}~\cite{scuttle-poll} is an implementation of the polling
-model of Loomio~\cite{loomio}, an online group decision-making platform. In
-addition, it serves as the basis for \textit{Scry}~\cite{patchbay-scry}, an
-alternative to Doodle~\cite{doodle.com}, itself an online calendar tool for
-organizing meeting. A poll is a request for opinions, which for example may
-express preference for one choice among many possibilities or provide a list of
-time availabilities. A poll is created by publishing a \texttt{poll} message in
-a log with a number of possible options and a deadline. Participants then
-publish their \textit{position} among the choices available. The poll creator
-finally publishes a \textit{resolution} based on the other participants'
-positions. Concurrency in polls is limited because the creation and resolution
-of the poll are done by the same user, and therefore works quite well with the
-SSB communication model.
+% \textit{Scuttle-poll}~\cite{scuttle-poll} is an implementation of the polling
+% model of Loomio~\cite{loomio}, an online group decision-making platform. In
+% addition, it serves as the basis for \textit{Scry}~\cite{patchbay-scry}, an
+% alternative to Doodle~\cite{doodle.com}, itself an online calendar tool for
+% organizing meeting. A poll is a request for opinions, which for example may
+% express preference for one choice among many possibilities or provide a list of
+% time availabilities. A poll is created by publishing a \texttt{poll} message in
+% a log with a number of possible options and a deadline. Participants then
+% publish their \textit{position} among the choices available. The poll creator
+% finally publishes a \textit{resolution} based on the other participants'
+% positions. Concurrency in polls is limited because the creation and resolution
+% of the poll are done by the same user, and therefore works quite well with the
+% SSB communication model.
 
 These applications show how the SSB communication model greatly simplifies the
 infrastructure required to build social applications since none of the previous
@@ -889,11 +889,11 @@ An open problem is how old log entries can be ``saved'' once their primitives be
 
 In SSB, there is no mechanism for terminating a log. But it would be straightforward to add a mechanism that declares that the log will not be extended in the future (and any future extensions should thus be discarded). By allowing this mechanism to carry some payload data, key rotation could be supported: The log termination record would include the public key of a new log that should serve as the extension of the terminated one.
 
-\subsection{Encoding Simplifications}
-
-The json-based encoding turned out to be a major source of incidental complexity when implementing SSB in languages other than javascript. A principled redesign should probably use a simple binary encoding instead.
-
-Additionally, messages should more clearly separate integrity metadata (backlink, sequence number and signature), content metadata (type and timestamp), and the actual content.
+% \subsection{Encoding Simplifications}
+%
+% The json-based encoding turned out to be a major source of incidental complexity when implementing SSB in languages other than javascript. A principled redesign should probably use a simple binary encoding instead.
+%
+% Additionally, messages should more clearly separate integrity metadata (backlink, sequence number and signature), content metadata (type and timestamp), and the actual content.
 
 \subsection{Fundamental Changes}
 
@@ -952,9 +952,9 @@ The currently used gossip-based default replication protocol does not protect ag
 
 Another area where the replication protocol could be improved is by using private set intersection when determining the set of feeds that both parties are interested in. That way, untrusted peers would not be able to learn about new ids purely from the replication layer. Combined with an access control mechanism that only forwards data to authorized identities, this would provide resilience against bots ``spidering'' the network.
 
-TODO mention alternative models (indexing-in-the-cloud, lite clients) here?
-
-TODO Naming?
+% TODO mention alternative models (indexing-in-the-cloud, lite clients) here?
+%
+% TODO Naming?
 
 % ----------------------------------------------------------------------
 \section{Challenges}
@@ -975,19 +975,19 @@ Non-interoperable \textit{types} are a very tangible symptom of a broader theme,
 
 A more pragmatic problem is that of scalability: To support replication, full logs have to be stored. While this could be mitigated through mechanisms of partial replication, it is still necessary to store a potentially unbounded number of messages. This boils down to the general fact that all data that is to be propagated needs to be stored \textit{somewhere}. But SSB has stronger expactations about what should be stored than other protocols.
 
-TODO?:
-
-SLAs (service level agreements, ``peer quality'') (more of a general p2p problem and not mandated by ssb, thus out of scope here?)
-
-While subjectivity and concurrency are great to keep the protocol simple, one could argue that the complexity is merely pushed to the application developer, who is usually the person to *shield* from complexity
-
-TODO These are already covered in the future work section. Mention them anyways?:
-
-- re-keying, forward secrecy
-- routing and scalability
-- protocol agility (binary msg format, crypto)
-- deleting content, gdpr, ephemeral content
-- multi-device (at the very least this one should be mentioned again)
+% TODO?:
+%
+% SLAs (service level agreements, ``peer quality'') (more of a general p2p problem and not mandated by ssb, thus out of scope here?)
+%
+% While subjectivity and concurrency are great to keep the protocol simple, one could argue that the complexity is merely pushed to the application developer, who is usually the person to *shield* from complexity
+%
+% TODO These are already covered in the future work section. Mention them anyways?:
+%
+% - re-keying, forward secrecy
+% - routing and scalability
+% - protocol agility (binary msg format, crypto)
+% - deleting content, gdpr, ephemeral content
+% - multi-device (at the very least this one should be mentioned again)
 
 % ----------------------------------------------------------------------
 \section{Benefits}
