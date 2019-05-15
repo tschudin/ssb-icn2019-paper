@@ -621,7 +621,7 @@ as fetching content that is larger than the 4KB datagram size-- use
 name prediction (e.g., sequence numbers as part of the name): Several
 Interests are sent ahead without waiting for the first Interest to be
 answered. If name prediction is not available,
-manifests~\cite{manifest} can be used i.e., a datagram is returned in
+manifests~\cite{DBLP:conf/infocom/BaugherDNO12} can be used i.e., a datagram is returned in
 lieu of the content which contains a sequence of names pointing to
 single Data packets or further sub-manifests.
 
@@ -881,22 +881,34 @@ push-only service for NDN.
 % ----------------------------------------------------------------------
 \section{Related Work}
 
-The basic ideas behind SSB can be traced back to the nineties: Secure logging~\cite{schneier1998cryptographic} and secure relative time-stamping~\cite{haber1990time}. The major innovation of SSB is to use these techniques for disseminating data through a gossip protocol in a network of untrusted peers.
+Some basic ideas behind SSB can be traced back to the nineties, like
+for example secure logging~\cite{schneier1998cryptographic} and secure
+relative time-stamping~\cite{haber1990time}. The major innovation of
+SSB is to use these techniques for disseminating data through a gossip
+protocol in a network of untrusted peers, effectively implementing a
+push-based information-centric network.
 
-\begin{itemize}
-\item Linda tuple space (global data pool): apps working with wr() and rd() only.
-\item Haggle (pocket-switched networks), opportunistic networking, DTN
-\item ICN in general
-\item \ldots
-\item WAL is anchor of persistence in distributed systems. Discuss scenarios with node crashing before/after contacting a peer. Rare chance of forking a log in case of network partition.
-\item RAFT, resilient log-based consensus. Log compactation is what SSB is lacking, but could add (on a per-app basis).
-\item GIT and DAT
-\item Kappa and CoucheDB
-\end{itemize}
+SSB's push-based content dissemintation approach is also
+underlying middle-ware systems like
+{\em Linda}~\cite{Gelernter:1985:GCL:2363.2433}. Linda offers a global data
+pool abstraction where distributed processes can store and consume
+objects without locality references: The effects of a {\tt wr()}
+operation are propagated automatically such that processes being
+blocked on a {\tt rd()} could be resumed immediately.
+
+The use of logs itself has a long tradition in distributed systems,
+especially in operating systems ({\em write-ahead logs} in journaling file
+systems) as well as distributed databases. More recently, in the cloud
+context, resilient event ordering protocols like
+{\em RAFT}~\cite{DBLP:conf/usenix/OngaroO14} have been proposed that also
+rely on replicated logs. Although logs are used at various places of
+distributed systems, this data structure is typically not exposed to
+the commuicating parties, while SSB exactly rests on letting apps
+interact directly with the secured single-author logs.
 
 \textit{Selective Hearing}~\cite{meiklejohn2015selective} uses a gossip protocol to disseminate monotonically growing sets of updates to provide a runtime or the Lasp~\cite{meiklejohn2015lasp} programming language. The general architecture is similar to that of SSB, the most striking difference is that Lasp is by design restricted to CRDTs. SSB can be considered more low-level, developers are free to choose a strategy for dealing with concurrency and eventual consistency. Selective hearing was developed in a more traditional research approach, so it glosses over some of the difficult problems encountered in the ``real world'' such as user onboarding and byzantine peers. Their ``practical large scale evaluation''~\cite{meiklejohn2017lasp} consists of 1000 well-controlled nodes running a toy application in the cloud, whereas SSB is more battle-proven.
 
-Also contrast with blockchains? (ssb sidesteps consensus and thus proof-of-whatever)
+% Also contrast with blockchains? (ssb sidesteps consensus and thus proof-of-whatever)
 
 % ----------------------------------------------------------------------
 
@@ -1089,7 +1101,7 @@ We presented secure scuttlebutt, a fully decentralized, peer-to-peer event-shari
 The comparison with NDN shows that SSB's paradigm of push-based, identity-centric data transfer comes with a different set of tradeoffs than NDN's choice of pull-based, information-centric data transfer. Focussing on identities leads to challenges with respect to user privacy, but it also enables elegant, decentralized solutions to common problems with information-centric systems. Whether in the context of SSB or more generally, we believe that further study of identity-centric systems will lead to valuable insights and designs.
 
 % ----------------------------------------------------------------------
-
+\newpage
 \bibliographystyle{acm}
 \bibliography{main}
 
