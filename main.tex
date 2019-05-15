@@ -186,6 +186,45 @@ systems, coordinating the data persistence as a basis for resilience
 is often an add-on task, or requires at least a special recovery
 service.
 
+\subsection{NDN discussion (needs better title)}
+
+A core contribution of this paper is a direct comparison of SSB with
+NDN.  Our analysis reveals strong incompatibilities in at least two
+dimensions. The first is the content dissemination strategy where NDN
+is well known for its PULL pattern while SSB follows a PUSH model.
+\vskip 0.5em
+
+\begin{tabular}{l|c|c|}
+                   &     PULL                  & PUSH \\
+\hline
+  name-centric     & {\bf NDN}     & {\small\em NDN-over-SSB?} \\
+                   &               & {\small\em Sect.~\ref{ssect:ndn-over-ssb}} \\
+\hline  
+  identity-centric & {\small\em SSB-over-NDN?} & {\bf SSB}               \\
+                   & {\small\em Sect.~\ref{ssect:ssb-over-ndn}} & \\
+\hline
+\end{tabular}
+\vskip 0.5em
+
+The second difference is more subtle and seems to be rooted in what
+NDN considers the main focus of networking (as we believe). In NDN,
+repositories are an implicit assumption on which the scalability
+claims of NDN rest, and consequently, these repositories --or, to be
+more precise, their global prefixes and all names attached to them--
+are what NDN centers on. SSB, on the other hand, has no global
+constructs, true to is decentralized point of view, and can be called
+{\em name-centric} in order to contrast it from {\em name-centric}
+NDN.
+
+We dedicate a full Section~\ref{sect:NDN} to this discussion where we examine
+whether one could either ``drag'' SSB into NDN (SSB-over-NDN), or what
+SSB would need to emulate NDN (NDN-over-SSB). But in both cases it
+seems that none of the emulated ICN styles could benefit much from the
+hosting substrate, thus remain incompatible. Still, there could be an
+intermediate territory (``SSB-aware NDN'', or vice versa) where in the
+future a synthesis of the two approaches may emerge, but we have not
+progress so far in our analysis, yet.
+
 
 \subsection*{Scuttlebutt = Information-Centric Gossip}
 
@@ -534,6 +573,7 @@ o% n Tangles~(Section~\ref{Section:Tangle}) would make the implementations more
 
 % ----------------------------------------------------------------------
 \section{Comparing SSB with Named Data Networking (NDN)}
+\label{sect:NDN}
 
 After a brief introduction to NDN we compare and relate SSB to NDN in
 three different ways: layering SSB on top of NDN, layering NDN on top
@@ -600,6 +640,7 @@ assumptions behind SSB and NDN.
 \end{figure}
 
 \subsection{SSB over NDN}
+\label{ssect:ssb-over-ndn}
 
 SSB's log entries, also limited to 4KB, map well to NDN if one
 abstracts away from the wire format: A SSB
@@ -687,6 +728,7 @@ change NDN beyond recognition, especially flow-balance would be
 lost during this transition.
 
 \subsection{NDN over SSB}
+\label{ssect:ndn-over-ssb}
 
 An interesting thought experiment is to reverse the layering,
 stress-testing SSB in this case. Is SSB universal enough so that one
