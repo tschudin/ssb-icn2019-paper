@@ -581,10 +581,8 @@ is a ``good enough'' basis for real decentralized services.
 
 After a brief introduction to NDN we compare and relate SSB to NDN in
 three different ways: layering SSB on top of NDN, layering NDN on top
-of SSB, and a hybrid mode where NDN forwarders are made SSB-aware. An
-interesting case is made of a NDN problem that has no equivalence in
-SSB, thus seems to be due to NDN's architectural choices. But some of
-the other problems we encounter point to questions that apply to NDN
+of SSB, and a hybrid mode where NDN forwarders are made SSB-aware.
+Some of the encountered problems point to questions that apply to NDN
 as well SSB.
 
 \subsection{Named Data Networking}
@@ -688,7 +686,7 @@ come back to a SSB-aware NDN layer in the next subsection.
 
 A second approach would be to use NDN's LINK objects in order to redirect
 Interests towards the location of the storage provider for a given
-$\langle id\rangle$. This requires a NDN name server~\cite{NDNS} and a
+$\langle id\rangle$. This requires a NDN naming service~\cite{DBLP:conf/icccn/AfanasyevJYTXM017} and a
 permanent storage provider to which the SSB devices would
 have to upload new content. The change in this case is on SSB's side,
 whose community would have to accept a logically centralized name
@@ -826,58 +824,6 @@ an undesirable artifact of NDN, described below, that only shows up
 in NDN but not in a SSB context.
 
 
-\subsection{Fixing NDN Routing Stratgies with Replication?}
-
-The following scenario highlights a problem in NDN when the same
-content is provided from multiple sources. The need for such a setting
-comes either from reliability (cloned repositories) or the concurrent
-streaming and recording of data streams, as shown in
-Fig.~\ref{fig:ndn-anomaly}.
-
-\begin{figure}[htb]
-  \includegraphics[width=0.5\columnwidth]{figs/ndn-anomaly.pdf}
-  \caption{\label{fig:ndn-anomaly}With two NDN sites having registered
-    the same prefix, can the network be smart enough to transparently
-    pull the content from the ``appropriate'' place?}
-\end{figure}
-
-The figure shows a live video stream that is captured by a repository
-for archival purposes. The archive registers the same prefix because,
-in the long run, this is from where the stream can be (re-)
-fetched. The video source makes its content available under the same
-name because it permits clients to consume the live stream, without
-having to wait for the archive to have recorded it. For the client,
-such a setups should be transparent in the spirit of
-information-centric networking.
-
-A problem appears when the client temporarily stops streaming. When
-resuming playout, to which content provider should the network direct
-the Interest messages? The network would have to know whether the
-client resumes from where it stopped (then it has to go to the archive
-site) or whether it wants to reconnect to the live stream. It could
-also be that the camera goes offline for some time, in which case all
-Interests should only go to the repo. The problem is that the network
-has no insights about the different roles (origin, replica) nor the
-semantics of streams (is a request for frame X to the stream's past,
-thus only available on the archive side?).
-
-It should be highlighted that this problem does not exist in an SSB
-setup: content is replicated through push to all interested parties
-i.e., the archive repo as well as the consumer device, both having
-declared to the networks their ``social'' relationship of being
-interested in the source's content. Consumption, as well as archiving,
-happens directly from the replicated log without any on-demand
-protocol in place. In other words, the above network dilemma is an
-artifact of NDN's pull() model that simply does not exist a push
-world.
-
-We do not know how to best fix this in NDN. Can a general strategy be
-engineered for such cases? Or should the three parties engage in a
-SYNC protocol? Especially the last case would lead to continued
-probing (using Interest) whether there was a state change, and
-subsequent pull in fact would implement the push primitive that NDN
-tries to avoid. We suggest that this case merits a closer look at a
-push-only service for NDN.
 
 % ----------------------------------------------------------------------
 \section{Related Work}
@@ -1101,3 +1047,59 @@ The comparison with NDN shows that SSB's paradigm of push-based, identity-centri
 \bibliography{main}
 
 \end{document}
+
+An
+interesting case is made of a NDN problem that has no equivalence in
+SSB, thus seems to be due to NDN's architectural choices. But s
+\subsection{Fixing NDN Routing Stratgies with Replication?}
+
+The following scenario highlights a problem in NDN when the same
+content is provided from multiple sources. The need for such a setting
+comes either from reliability (cloned repositories) or the concurrent
+streaming and recording of data streams, as shown in
+Fig.~\ref{fig:ndn-anomaly}.
+
+\begin{figure}[htb]
+  \includegraphics[width=0.5\columnwidth]{figs/ndn-anomaly.pdf}
+  \caption{\label{fig:ndn-anomaly}With two NDN sites having registered
+    the same prefix, can the network be smart enough to transparently
+    pull the content from the ``appropriate'' place?}
+\end{figure}
+
+The figure shows a live video stream that is captured by a repository
+for archival purposes. The archive registers the same prefix because,
+in the long run, this is from where the stream can be (re-)
+fetched. The video source makes its content available under the same
+name because it permits clients to consume the live stream, without
+having to wait for the archive to have recorded it. For the client,
+such a setups should be transparent in the spirit of
+information-centric networking.
+
+A problem appears when the client temporarily stops streaming. When
+resuming playout, to which content provider should the network direct
+the Interest messages? The network would have to know whether the
+client resumes from where it stopped (then it has to go to the archive
+site) or whether it wants to reconnect to the live stream. It could
+also be that the camera goes offline for some time, in which case all
+Interests should only go to the repo. The problem is that the network
+has no insights about the different roles (origin, replica) nor the
+semantics of streams (is a request for frame X to the stream's past,
+thus only available on the archive side?).
+
+It should be highlighted that this problem does not exist in an SSB
+setup: content is replicated through push to all interested parties
+i.e., the archive repo as well as the consumer device, both having
+declared to the networks their ``social'' relationship of being
+interested in the source's content. Consumption, as well as archiving,
+happens directly from the replicated log without any on-demand
+protocol in place. In other words, the above network dilemma is an
+artifact of NDN's pull() model that simply does not exist a push
+world.
+
+We do not know how to best fix this in NDN. Can a general strategy be
+engineered for such cases? Or should the three parties engage in a
+SYNC protocol? Especially the last case would lead to continued
+probing (using Interest) whether there was a state change, and
+subsequent pull in fact would implement the push primitive that NDN
+tries to avoid. We suggest that this case merits a closer look at a
+push-only service for NDN.
