@@ -644,24 +644,24 @@ assumptions behind SSB and NDN.
 \subsection{SSB over NDN}
 \label{ssect:ssb-over-ndn}
 
-SSB's log entries, also limited to 4KB, map well to NDN if one
+SSB's smaller than 4KB log entries map perfectly well to NDN if one
 abstracts away from the wire format: A SSB
-log entry for \mbox{$\langle id:seqno\rangle$} would become\\
+log entry for \mbox{$\langle id:seqno\rangle$} could be named by\\
   \centerline{\tt D('/ssb/logs/<id>/<seqno>', content, signature)} \\
 where {\tt content} includes the name of the previous log entry.
-In order to support access to a log entry via its hash, all content
-would also be published under\\
-\centerline{\tt
-  D('/ssb/sha256/<hashval>', content, signature)}
-
-\noindent
-This double-publishing is necessary because NDN's implicit name
-component mechanics requires a {\em full} name, hence cannot do a longest
-prefix match on {\tt
-  "/ssb/ImplicitSha256DigestComponent =<hashval>"}. Moreover, the digest
-algorithm of SSB may change in the future and diverge from NDN's, hence
-requires a name subtree of its own ({\tt sha256} in this case).
-
+%In order to support access to a log entry via its hash, all content
+%would also be published under\\
+%\centerline{\tt
+%  D('/ssb/sha256/<hashval>', content, signature)}
+%
+%\noindent
+%This double-publishing is necessary because NDN's implicit name
+%component mechanics requires a {\em full} name, hence cannot do a longest
+%prefix match on {\tt
+%  "/ssb/ImplicitSha256DigestComponent =<hashval>"}. Moreover, the digest
+%algorithm of SSB may change in the future and diverge from NDN's, hence
+%requires a name subtree of its own ({\tt sha256} in this case).
+%
 A SSB client wanting to replicate a log from scratch would issue
 Interest packets starting at {\tt I('/ssb/logs/<id>/0')} and increase the
 sequence number until no more log entries can be fetched.
@@ -686,21 +686,27 @@ come back to a SSB-aware NDN layer in the next subsection.
 
 A second approach would be to use NDN's LINK objects in order to redirect
 Interests towards the location of the storage provider for a given
-$\langle id\rangle$. This requires a NDN naming service~\cite{DBLP:conf/icccn/AfanasyevJYTXM017} and a
-permanent storage provider to which the SSB devices would
-have to upload new content. The change in this case is on SSB's side,
-whose community would have to accept a logically centralized name
-service component. The question then is whether a NDN name service
-could handle a global database for the $\langle id\rangle$-to-storage
-mapping, or whether also here we would have to introduce SSB's social
-graph for scaling reasons. In fact, SSB's use case is a case of
-producer mobility where it is questionable that NDN could handle a
-world consisting of mobile terminals only.
+$\langle id\rangle$, using a NDN naming service~\cite{DBLP:conf/icccn/AfanasyevJYTXM017} and a set of
+permanent storage providers to which the SSB devices would
+have to upload new content.
+% The change in this case is on SSB's side,
+% whose community would have to accept a logically centralized name
+% service component.
+Even if there are only a small number of storage provider,
+the NDN naming service would have to
+handle a global database for the $\langle id\rangle$-to-storage
+mapping.
+%(as if all NDN  were mobile) or also here we would have to introduce SSB's social
+%graph for scaling reasons).
 
-SSB-over-NDN would either require changes to NDN or put tremendous
-stress on either on the NDN routing system or a name service, also
-potentially forcing SSB users to work with ``centrish'' content
-repositories and mapping services.
+%In fact, SSB's use case is a case of
+%producer mobility where it is questionable that NDN could handle a
+%world consisting of mobile terminals only.
+
+%SSB-over-NDN would either require changes to NDN or put tremendous
+%stress on either on the NDN routing system or a name service, also
+%potentially forcing SSB users to work with ``centrish'' content
+%repositories and mapping services.
 
 \subsection{SSB-aware NDN}
 
