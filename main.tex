@@ -321,6 +321,7 @@ of log entries is discussed in the subsection on tangles.
 
 
 \subsection{Example: SSB's user directory}
+\label{ssect:about}
 
 `{\small\tt about}' is SSB's user database i.e., an application that
 associates cryptographic IDs with (typically) human-readable
@@ -1046,37 +1047,37 @@ TODO: This section seems somewhat trivial. Remove it?
 % ----------------------------------------------------------------------
 \section{Benefits}
 
-Here we summarize some desirable properties of SSB. These go beyond the obvious productivity gains for application developers who don't need to implement encryption, authentication and synchronization.
+Here we summarize some desirable properties of SSB. These go beyond the obvious productivity gains for application developers who don't need to implement encryption, authentication and synchronization, as well as the automatic replication of the content through SSB's push approach.
 
 \subsection{Resilience}
 
-An often stated mantra in SSB development is ``no global singletons''. SSB is thus a fully decentralized system, or more accurately a collection of decentralized systems that overlap to varying degrees. It is consequently highly resilient to (targeted) failures, users do not need to depend on any single, priviledged central authority, including cloud-based service providers. Going beyond the common mentality of a grand unified social platform, there are deliberately isolated networks, for example limited to a family, or a specific local area network.
+An often stated mantra in SSB development is ``no global singletons''. SSB can be characterized as ``collection of decentralized systems'' that overlap to varying degrees. It is consequently highly resilient to (targeted) failures due to errors in the code base or in operations. Also, users do not need to depend on any single, priviledged central authority, including cloud-based service providers. Going beyond the common mentality of a grand unified social platform, there are deliberately isolated networks, for example limited to a family, or a specific local area network.
 
-Since SSB applications only interact with the local replicas of logs, complete offline operation is automatically built in. Offline operation is simply a special case of a network partition. Because this case occurs so often, the protocol is geared towards handling network partitions gracefully, further contributing to the resilience of SSB. In particular, all operations are delay tolerant.
+Since SSB applications only interact with the local replicas of logs, complete offline operation is automatically built in. Offline operation is simply a special case of a (temporary) network partition. Because this case occurs so often, the protocol is geared towards handling network partitions gracefully, further contributing to the resilience of SSB. In particular, all operations are delay tolerant.
 
-Continuing with the theme of resilience, data loss is highly unlikely, since full log replicas are stored throughout the network. Indeed it is common practice when migrating between devices or during development to delete the whole local database, keeping nothing but the keypair and optionally a list of servers with a well-known ip address. Upon starting a server again, all data gets retrieved from the network.
+Continuing with the theme of resilience, data loss is highly unlikely since full log replicas are stored throughout the network. Indeed it is common practice when migrating between devices or during development to delete (or loose) the whole local database, keeping nothing but the keypair and optionally a list of servers with a well-known ip address. Upon starting a server again, all data gets retrieved from the network, more specifically from your friends.
 
 % TODO mention the special case of running a dedicated device for backup purposes?
 
-TODO resistence against sybil attacks (note that the particular mechanism for what to pull in is not hard-coded)
+%TODO resistence against sybil attacks (note that the particular mechanism for what to pull in is not hard-coded)
 
 \subsection{Efficiency}
 
 Due to the ``subjective reader'' approach, all ssb servers can operate concurrently. There is no need for costly synchronization across nodes. Applications can fully embrace this, for example by using CRDTs. The monotonically growing logs are well-suited for implementing CRDTs and similar techniques.
 
-By leveraging trust instead of trying to eliminate it, there is no need for proof-of-work and similar wasteful techniques. The delay tolerance allows routing layers that can optimize for efficient usage of resources rather than going for minimal latency at any cost. This mentality could go a long way towards systems that are more sustainable than current alternatives. And there are strong arguments that favoring systems that try to eradicate inter-human trust might not lead to a particularly desirable future.
+By {\em leveraging} trust instead of trying to eliminate it (like, e.g. in blockchain systems which establish consensus over trustless nodes), there is no need for proof-of-work and similar wasteful techniques. The delay tolerance allows routing layers that can optimize for efficient usage of resources rather than going for minimal latency at any cost. This mentality could go a long way towards systems that are more sustainable than current alternatives. And there are strong arguments that favoring systems that try to eradicate inter-human trust might not lead to a particularly desirable future.
 
-\subsection{Counterantidisintermediation and Plurality}
+\subsection{Plurality and Disintermediation}
 
-TODO: I suppose we could shorten the title to ``Plurality'', but it would be a shame...
+% TODO: I suppose we could shorten the title to ``Plurality'', but it would be a shame...
 
-The freedom of applications to interpret data in whatever way they see fit reduces the ability of centralized powers to coerce users. Furthermore, the usage of json as a common, self-describing data format prevents information being ``closed in''. Rather than depending on a proprietary API, interoperability and the ability to create alternative frontends is the default. This also leads to sharing of data between applications. For example, the `{\small\tt about}' information (Section~\ref{sect:XX}) can be reused by all programs, freeing implementors from duplicating work and creating a coherent user experience across apps.
+The freedom of applications to interpret data in whatever way they see fit reduces the ability of centralized powers to coerce users through protocol design desicions. SSB supports plurality not only for this reason but also as a deliberate strategy to drive evolution. Rather than depending on a proprietary app-level APIs, interoperability and the ability to create alternative frontends is the default, resting on the direct access to the replicated data. This does not exclude the sharing of data between applications. For example, the `{\small\tt about}' information (Section~\ref{ssect:about}) can be reused by all programs, freeing implementors from duplicating work and creating a coherent user experience across apps.
 
-As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features. Applications can simply start producing new kinds of messages, and interoperability works out with all users who share the same interpretation of those messages. Especially when evolving functionality, it is often sufficient to add more entries to a json object. Other applications simply ignore them but will continue working.
+As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features: Potential intermediaris are removed from the development loops. Applications can simply start producing new kinds of log entries, and interoperability works out with all users who share the same interpretation of those messages. Especially when evolving functionality, it is often sufficient to add more entries to a JSON object: Other applications simply ignore them but will continue working.
 
-This results in an organic evolution of features, without ``the system'' ever shutting down. Like any uncoordinated evolutionary process, the end result might not be as streamlined as a shiny, pre-designed solution. But unlike many such proposed, streamlined systems, the continuous and incremental improvement of SSB applications has resulted in a thriving ecosystem that serves the needs of thousands of users. And it will continue to evolve.
+This results in an organic evolution of features, without ``the system'' ever shutting down. Like any uncoordinated evolutionary process, the result might not be as streamlined as a shiny, pre-envisaged solution, but the evolution is open ended and does not depend on central funding and decision making. Unlike many such proposed streamlined community systems, the continuous and incremental improvement of SSB applications has resulted in a thriving ecosystem that serves the needs of thousands of users, very much like the original Internet envisaged. % And it will continue to evolve.
 
-TODO is this \textit{too} political/opinionated? Or not political \textit{enough}? We really need that ``sociological computer science'' journal... Feel free to tone this section down. But damn, writing those words \textit{felt good}!
+% TODO is this \textit{too} political/opinionated? Or not political \textit{enough}? We really need that ``sociological computer science'' journal... Feel free to tone this section down. But damn, writing those words \textit{felt good}!
 
 % ----------------------------------------------------------------------
 \section{Conclusions}
