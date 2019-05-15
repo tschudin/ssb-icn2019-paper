@@ -200,7 +200,7 @@ is well known for its PULL pattern while SSB follows a PUSH model.
 \hline
   name-centric     & {\bf NDN}     & {\small\em NDN-over-SSB?} \\
                    &               & {\small\em Sect.~\ref{ssect:ndn-over-ssb}} \\
-\hline  
+\hline
   identity-centric & {\small\em SSB-over-NDN?} & {\bf SSB}               \\
                    & {\small\em Sect.~\ref{ssect:ssb-over-ndn}} & \\
 \hline
@@ -241,7 +241,7 @@ progress so far in our analysis, yet.
 % ----------------------------------------------------------------------
 \section{SSB Architecture and Protocol}
 
-In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. Since anybody can generate a random keypair with very low probability of multiple peers generating the same keypair, no central authority is necessary for introducing users to the system. Conceptually, SSB is a network of identities that connect to each other (physical topology) and share mutual or unilateral interest in the other peer's data (social graph), as shown in Figure~\ref{fig:net-of-people}.
+In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. Since anybody can generate a random keypair with very low probability of multiple peers generating the same keypair, no central authority is necessary for introducing users to the system. Conceptually, SSB is a network of identities that connect to each other (physical topology) and share mutual or unilateral interest in the other peer's data (social graph), as shown in Figure~\ref{fig:net-of-people}. A node running the SSB protocol is called a \textit{relay}.
 
 The {\em single-writer append-only logs} of SSB consist of  messages that include a {\em backlink} in form of a cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blockchain is that each SSB user unilaterally maintains their own log and cryptographically signs all their (and only their) messages. Messages whose backlink points to a message in a different log (i.e. from a different author) are considered invalid and will not be processed by SSB peers.
 
@@ -268,7 +268,7 @@ Concretely, each log entry, which may not exceed 4 KB, contains the following pi
 \end{itemize}
 
 The {\em content} is a JSON object that must contain a {\em type} key that serves as a hint for how the content should be interpreted. SSB enforces that the content is valid JSON by rejecting any malformed entry.
-Instead of structured JSON data, the content can be a base64-encoded byte string of encrypted data (of structured JSON), together with a tag that signifies which encryption algorithm was used.
+Instead of structured JSON data, the content can be a base64-encoded string of encrypted data, together with a tag that signifies which encryption algorithm was used.
 
 SSB defines a format for encoding specifically the public keys of identities and the hashes of messages and blobs (see below) as strings. This allows applications to scan the content of log entries from other peers for such references, e.g. in order to create database indices (see Sect.~\ref{ssect:dapps}).
 
@@ -282,7 +282,7 @@ In addition to this primary replication mechanism, SSB provides two other ways o
 
 \subsection*{SSB Relays as an Application Platform}
 
-Beyond replicating logs and checking the validity of update messages, an SSB relay offers an API to its peers. Peers can host arbitrary programs that issue RPCs to the relay over an IPC mechanism. The exposed functionality includes appending to the author's log, reading from arbitrary logs, specifying which logs a relay should replicate, and fetching blobs and out-of-order messages.
+Beyond replicating logs and checking the validity of update messages, an SSB relay offers an API to its peers. Peers can host arbitrary programs that issue RPCs to the relay over an IPC mechanism. The exposed functionality includes appending to the peer's log, reading from logs, specifying which logs a relay should replicate, and fetching blobs and out-of-order messages.
 % SSB thus becomes a platform for building applications, encapsulating the complexity of data replication.
 
 The reference implementation of the SSB relay, written in JavaScript, also includes a mechanism for loading {\em plugins} into the relay to extend its functionality. There are a few default plugins: Conceptually these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin scans the relay's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the relay to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph.
@@ -893,7 +893,7 @@ The basic ideas behind SSB can be traced back to the nineties: Secure logging~\c
 \item Kappa and CoucheDB
 \end{itemize}
 
-\textit{Selective Hearing}~\cite{meiklejohn2015selective} uses a gossip protocol to disseminate monotonically growing sets of updates to provide a runtime or the Lasp~\cite{meiklejohn2015lasp} programming language. The general architecture is similar to that of SSB, the most striking difference is that Lasp is by design restricted to CRDTs. SSB can be considered more low-level, developers are free to choose a strategy for dealing with concurrency and eventual consistency. Selective hearing was developed in a more traditional research approach, so it glosses over some of the diffucult problems encountered in the ``real world'' such as user onboarding and byzantine peers. Their ``practicle large scale evaluation''~\cite{meiklejohn2017laspevaluation} consists of 1000 well-controlled nodes running a toy application in the cloud, whereas SSB is more battle-proven.
+\textit{Selective Hearing}~\cite{meiklejohn2015selective} uses a gossip protocol to disseminate monotonically growing sets of updates to provide a runtime or the Lasp~\cite{meiklejohn2015lasp} programming language. The general architecture is similar to that of SSB, the most striking difference is that Lasp is by design restricted to CRDTs. SSB can be considered more low-level, developers are free to choose a strategy for dealing with concurrency and eventual consistency. Selective hearing was developed in a more traditional research approach, so it glosses over some of the diffucult problems encountered in the ``real world'' such as user onboarding and byzantine peers. Their ``practical large scale evaluation''~\cite{meiklejohn2017lasp} consists of 1000 well-controlled nodes running a toy application in the cloud, whereas SSB is more battle-proven.
 
 Also contrast with blockchains? (ssb sidesteps consensus and thus proof-of-whatever)
 
