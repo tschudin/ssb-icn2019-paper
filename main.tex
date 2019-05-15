@@ -841,6 +841,8 @@ The basic ideas behind SSB can be traced back to the nineties: Secure logging~\c
 \item Kappa and CoucheDB
 \end{itemize}
 
+\textit{Selective Hearing}~\cite{meiklejohn2015selective} uses a gossip protocol to disseminate monotonically growing sets of updates to provide a runtime or the Lasp~\cite{meiklejohn2015lasp} programming language. The general architecture is similar to that of SSB, the most striking difference is that Lasp is by design restricted to CRDTs. SSB can be considered more low-level, developers are free to choose a strategy for dealing with concurrency and eventual consistency. Selective hearing was developed in a more traditional research approach, so it glosses over some of the diffucult problems encountered in the ``real world'' such as user onboarding and byzantine peers. Their ``practicle large scale evaluation''~\cite{meiklejohn2017laspevaluation} consists of 1000 well-controlled nodes running a toy application in the cloud, whereas SSB is more battle-proven.
+
 Also contrast with blockchains? (ssb sidesteps consensus and thus proof-of-whatever)
 
 % ----------------------------------------------------------------------
