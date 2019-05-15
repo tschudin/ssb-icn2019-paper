@@ -524,6 +524,7 @@ list of posts and being able to record a post's submission time, leads
 to more complex client software that must prepare for and defend
 against a broad range of adversarial data found in the logs.
 
+Storing this transitive closure of application-level graphs in a space-efficient way such that it can be quickly queried and efficiently updated is a difficult but well-studied problem in the database literature~\cite{jin2012scarab}~\cite{yildirim2013dagger}. It should be possible to leverage some properties of SSB to get higher-quality results. The immutability of messages reduces the number of cases when dynamically maintaining the index structure, and the fact that each feed forms a total order can be utilized to efficiently encode the relation. Designing and implementing a general framework for performing causal ordering queries on SSB messages would be both an interesting research topic and a powerful tool for building applications
 
 \subsection{Synchronization and Eventual Consistency}
 \label{Section:Tangle}
@@ -578,7 +579,7 @@ o% n Tangles~(Section~\ref{Section:Tangle}) would make the implementations more
 
 After a brief introduction to NDN we compare and relate SSB to NDN in
 three different ways: layering SSB on top of NDN, layering NDN on top
-of SSB, and a hybrid mode NDN forwarders are made SSB-aware. An
+of SSB, and a hybrid mode where NDN forwarders are made SSB-aware. An
 interesting case is made of a NDN problem that has no equivalence in
 SSB, thus seems to be due to NDN's architectural choices. But some of
 the other problems we encounter point to questions that apply to NDN
@@ -591,7 +592,7 @@ request content by name --in a so called {\tt Interest} packet-- and
 at most one matching content is returned in a corresponding {\tt Data}
 packet. The Data packet includes the content's name and is signed such
 that a forwarding nodes can verify the correctness of the
-name-to-content binding. Checking the validity of a signature requires
+name-to-content binding (content was not tampered with). Checking the validity of a signature requires
 additional certification data which a forwarding node can fetch using
 the standard {\tt Interest/Data} packet pattern. Validated data
 packets are typically cached such that subsequent requests for the
@@ -774,7 +775,7 @@ would not benefit from SSB's social graph replication mindset. We try
 to explain this result in the following subsection.
 
 
-\subsection{Information-Centric vs ID-Centric ?}
+\subsection{Name-Centric vs Identity-Centric}
 
 At first sight, the stark difference of PULL vs PUSH is the main
 differentiator between NDN and SSB. However, the above layering
@@ -832,7 +833,6 @@ streaming and recording of data streams, as shown in
 Fig.~\ref{fig:ndn-anomaly}.
 
 \begin{figure}[htb]
-  \raggedright
   \includegraphics[width=0.7\columnwidth]{figs/ndn-anomaly.pdf}
   \caption{\label{fig:ssb-and-ndn}With two NDN sites having registered
     the same prefix, can the network be smart enough to transparently
@@ -899,9 +899,11 @@ Also contrast with blockchains? (ssb sidesteps consensus and thus proof-of-whate
 
 % ----------------------------------------------------------------------
 
-\section{Future Work: Log Format}
+\section{SSB's ``Work in Progress''}
 
-So far we have mostly restricted our presentation to those features that are implemented today as part of SSB. In the next two sections, we will describe further extensions. Due to space constraints we can only scratch the surface, most of these points could be vastly expanded as areas of academic interest. This section outlines a few dimensions in which the SSB log format --- SSB's ``thin waist'' --- could be modified to provide additional useful properties.
+So far we have mostly restricted our presentation to those features that are implemented today as part of SSB. In this section we will describe further extensions, namely a potential revision of SSB's log format and the operational challenges for scaling SSB beyond its user base of slightly more than ten thousand users.
+
+%Due to space constraints we can only scratch the surface, most of these points could be vastly expanded as areas of academic interest. This section outlines a few dimensions in which the SSB log format --- SSB's ``thin waist'' --- could be modified to provide additional useful properties.
 
 \subsection{Partial Replication}
 
@@ -933,11 +935,11 @@ It should be noted that in current SSB, blobs support both local deletion and ta
 
 \subsection{Cryptographic Agility}
 
-TODO help, I don't speak scientific crypto lingo
+% TODO help, I don't speak scientific crypto lingo
 
-Since SSB relies on multiple cryptographic primitives (signatures and hashes for the log format, encryption for the replication protocol), cryptographic agility~\cite{nelson2011crypto} is an essential concern. All hashes and signatures in the logs include an indicator of the cryptographic primitive that has been used. This means that the protocol can introduce the use of new primitives as old ones become broken.
+SSB relies on multiple cryptographic primitives (signatures and hashes for the log format, encryption for the replication protocol): best practice mandates that cryptographic agility is supported~\cite{nelson2011crypto}. All hashes and signatures in the logs include an indicator of the cryptographic primitive that has been used. At least in theory this means that the SSB protocol can introduce the use of new primitives as old ones become broken.
 
-An open problem is how old log entries can be ``saved'' once their primitives become insecure. The naive approach of republishing old messages with a new key changes the hashes of all those messages, thus breaking inter-message references. Alternate approaches could be based on publishing new messages that assert facts about older messages, or determining the trustworthyness of old messages based on how they are being referenced.
+Howeber, an open problem is how old log entries can be ``saved'' once their primitives become insecure. The naive approach of republishing old messages with a new key changes the hashes of all those messages, thus breaking inter-message references. Alternate approaches could be based on publishing new messages that assert facts about older messages, or determining the trustworthyness of old messages based on how they are being referenced. A similar discussion (and proposed solution) for NDN can be found in~\cite{DeLorean}.
 
 \subsection{Log Management}
 
@@ -949,26 +951,26 @@ In SSB, there is no mechanism for terminating a log. But it would be straightfor
 %
 % Additionally, messages should more clearly separate integrity metadata (backlink, sequence number and signature), content metadata (type and timestamp), and the actual content.
 
-\subsection{Fundamental Changes}
+%\subsection{Fundamental Changes}
 
-The previously presented changes would still result in protocols based on replicated append-only logs. But those are not the only push-based, indentity-centric systems one can imagine. An incomplete list of small tweaks that would result in fundamentally different system:
+%The previously presented changes would still result in protocols based on replicated append-only logs. But those are not the only push-based, indentity-centric systems one can imagine. An incomplete list of small tweaks that would result in fundamentally different system:
 
-\begin{itemize}
-  \item introducing a mechanism to ``merge'' forked feeds rather than discarding them
-  \item using different data structures than linked lists as feeds, e.g. sets, maps, trees or directed acyclic graphs
-  \item making the protocol aware of application-level semantics to support lossy but semantics-preserving log compaction
-  \item addressing messages by a pair of author and sequence number, unlike hash-based addressing this allows cyclic references
-\end{itemize}
+%\begin{itemize}
+%  \item introducing a mechanism to ``merge'' forked feeds rather than discarding them
+%  \item using different data structures than linked lists as feeds, e.g. sets, maps, trees or directed acyclic graphs
+%  \item making the protocol aware of application-level semantics to support lossy but semantics-preserving log compaction
+%  \item addressing messages by a pair of author and sequence number, unlike hash-based addressing this allows cyclic references
+%\end{itemize}
 
-The design space for systems of identity-centric data replication is vast and not well explored. SSB only occupies a small location in it.
+%The design space for systems of identity-centric data replication is vast and not well explored. SSB only occupies a small location in it.
 
-\section{Future Work: Userspace}
+%\section{Future Work: Userspace}
 
-Beyond protocol-level evolution, there are a couple of higher-level issues that often arise when designing applications on top of SSB. This section gives an overview over the most common ones and sketches potential approaches.
+%Beyond protocol-level evolution, there are a couple of higher-level issues that often arise when designing applications on top of SSB. This section gives an overview over the most common ones and sketches potential approaches.
 
 \subsection{Multi-Device Support}
 
-If two different devices used the same SSB identity to publish messages concurrently, this would result in a forked feed. It is thus recommended to create a distinct identity for each device to eliminate this risk. This however leads to problems such as being unable to decrypt encrypted messages on some device because they have been encrypted to the public key used by a different device. The user also needs to follow or block identities once per device.
+If two different devices used the same SSB identity to publish messages concurrently, this would result in a forked feed with the consequence that peer relays would stop propagating at least one, of not both log extensions. It is thus recommended to create a distinct identity for each device to eliminate this risk. This however leads to problems such as being unable to decrypt encrypted messages on some device because they have been encrypted to the public key used by a different device. The user also needs to follow or block identities once per device.
 
 One approach could be to develop schemes that allow sharing the same private key across multiple devices to allow read-access, while enforcing mutual exclusion on writes.
 
@@ -978,7 +980,7 @@ Orthogonal to the issue of \textit{using} data from aggregated, partially ordere
 
 \subsection{Access Control}
 
-Currently, an ssb server will hand out data to anyone who asks. The messages that control replication (\textit{follows} and \textit{blocks}) only specify where data is wanted, but they can't express bounds on how far data should be spread. All data is conceptually visible globally.
+Currently, an SSB relay will hand out data to anyone who asks. The messages that control replication (\textit{follows} and \textit{blocks}) only specify where data is wanted, but they can't express bounds on how far data should be spread. All data is conceptually visible globally.
 
 To improve privacy, some servers choose to only forward messages of some feed $F$ to identities that are followed by the feed $F$. This is a rather ad-hoc solution, assigning meaning to \textit{follow} messages that might not have been intended. Work is underway for specifying dedicated messages that place bounds on how far data should be propagated through the social graph. These bounds can not be enforced however, anyone who has the data can obviously choose to ignore these requests. This is just as true as in any distributed setting.
 
@@ -992,13 +994,13 @@ Users (and applications on their behalf) have two fundamental options when deali
 
 While these are powerful primitives that give users full control over their environment, they place the burden on the affected individual. Going forward, it will be important to find mechanisms that allow to share the task of moderation and shift it to users who are privileged enough to be able to invest the necessary energy and time. A simple example could be to automatically adopt the \textit{block} messages of trusted peers. Since human dynamics are very nuanced and every human has their specific needs, we expect a lot of experimentations and different groups of users settling on different tools.
 
-\subsection{Causal Ordering}
+% \subsection{Causal Ordering}
 
-TODO: Does this really contribute to the paper, or am I just showing off? Perhaps parts of this should be moved to section 3?
+% TODO: Does this really contribute to the paper, or am I just showing off? Perhaps parts of this should be moved to section 3?
 
-Whenever a message $m_1$ contains the hash of another message $m_2$, this implies that $m_2$ must have already existed at the point where $m_1$ was created. Taking the transitive closure of this irreflexive relation yields a strict partial order. For any pair of messages $m_1$, $m_2$, $m_2$ is guaranteed to be older than $m_2$ if $(m_1, m_2)$ is an element of this order. Equivalently this can be interpreted as the existence of a (directed) path from $m_2$ to $m_1$ on the graph with the set of all messages as vertices and edges corresponding to the hashes inside those messages.
+% Whenever a message $m_1$ contains the hash of another message $m_2$, this implies that $m_2$ must have already existed at the point where $m_1$ was created. Taking the transitive closure of this irreflexive relation yields a strict partial order. For any pair of messages $m_1$, $m_2$, $m_2$ is guaranteed to be older than $m_2$ if $(m_1, m_2)$ is an element of this order. Equivalently this can be interpreted as the existence of a (directed) path from $m_2$ to $m_1$ on the graph with the set of all messages as vertices and edges corresponding to the hashes inside those messages.
 
-Storing this transitive closure in a space-efficient way such that it can be quickly queried and efficiently updated is a difficult but well-studied problem in the database literature~\cite{jin2012scarab}~\cite{yildirim2013dagger}. It should be possible to leverage some properties of SSB to get higher-quality results. The immutability of messages reduces the number of cases when dynamically maintaining the index structure, and the fact that each feed forms a total order can be utilized to efficiently encode the relation. Designing and implementing a general framework for performing causal ordering queries on SSB messages would be both an interesting research topic and a powerful tool for building applications.
+% Storing this transitive closure in a space-efficient way such that it can be quickly queried and efficiently updated is a difficult but well-studied problem in the database literature~\cite{jin2012scarab}~\cite{yildirim2013dagger}. It should be possible to leverage some properties of SSB to get higher-quality results. The immutability of messages reduces the number of cases when dynamically maintaining the index structure, and the fact that each feed forms a total order can be utilized to efficiently encode the relation. Designing and implementing a general framework for performing causal ordering queries on SSB messages would be both an interesting research topic and a powerful tool for building applications.
 
 \subsection{Replication Improvements}
 
@@ -1011,7 +1013,7 @@ Another area where the replication protocol could be improved is by using privat
 % TODO Naming?
 
 % ----------------------------------------------------------------------
-\section{Challenges}
+\section{SSB Challenges}
 
 In this section we critically review some of the limitations and challenges faced by push-based, identity-centric systems in general and SSB in particular. We omit those problems that apply to SSB in its current state but that would be solved by the extensions presented in the previous sections.
 
