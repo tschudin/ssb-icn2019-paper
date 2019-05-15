@@ -45,23 +45,23 @@
   event-sharing protocol and architecture for social apps. In this
   paper we describe SSB's features, its operations as well as the
   rationale behind the design. We also provide a comparison with
-  traditional information-centric networking protocols and discuss
+  a traditional information-centric networking architecture and discuss
   SSB's limitations and evolution opportunities.
 
-  At the transport level, SSB is a replication protocol for
-  append-only logs.  applications communicate indirectly by writing to
-  the local node's log and by reading from the locally available
-  replicated logs. From these, each app instance constructs its own
-  intepretation of the shared app state (an approach called
-  ``subjective reader'').  Scaling is achieved through in-network
-  caching of the immutable log updates and by routing the content
-  along the social graph.
+%  At the transport level, SSB is a replication protocol for
+%  append-only logs.  applications communicate indirectly by writing to
+%  the local node's log and by reading from the locally available
+%  replicated logs. From these, each app instance constructs its own
+%  intepretation of the shared app state (an approach called
+%  ``subjective reader'').  Scaling is achieved through in-network
+%  caching of the immutable log updates and by routing the content
+%  along the social graph.
 
-  SSB's current set of applications include classical social media
-  apps (chat, with end-to-end encryption and meta-data privacy), game
-  and lifestyle apps (chess, book reviews) as well as technical
-  applications like a p2p git, a shared file system, or a social
-  backup app for crypto keys using a secret sharing protocol.
+%  SSB's current set of applications include classical social media
+%  apps (chat, with end-to-end encryption and meta-data privacy), game
+%  and lifestyle apps (chess, book reviews) as well as technical
+%  applications like a p2p git, a shared file system, or a social
+%  backup app for crypto keys using a secret sharing protocol.
 \end{abstract}
 
 \maketitle
@@ -110,9 +110,10 @@ Each participant can publish data to their single-writer, append-only log. This 
 % Section~\ref{sect:XX}.
 
 \begin{figure}[htb]
-  \includegraphics[width=0.9\columnwidth]{figs/staltz-iop.pdf}
-  \caption{Staltz' ``Internet of People'' figure, needs to be redrawn
-    such that it can be read in B/W, too.\label{fig:net-of-people}}
+  \includegraphics[width=0.9\columnwidth]{figs/net-of-people.pdf}
+  \caption{SSB's ``Internet of Identities'' -- {\rm\small Users A, B and C
+    replicate logs ({\em a, b, \ldots}) based on whom they follow i.e., content
+    flows through intermediary friends: {\em C} does not follow {\em A}, hence has no log {\em a}. {\em A} and {\em B} follow each other such that when {\em A} follows {\em C}, {\em A} will get {\em C's} log {\em c} via {\em B}.}}
 \end{figure}
 
 % A second spin of SSB is that replication is done {\em pro-actively} and
@@ -196,7 +197,7 @@ systems, coordinating the data persistence as a basis for resilience
 is often an add-on task, or requires at least a special recovery
 service.
 
-\subsection*{Comparision to NDN}
+\subsection*{Comparing SSB to NDN}
 
 A core contribution of this paper is a direct comparison of SSB with
 \textit{named data networking} (NDN). Our analysis reveals strong incompatibilities in at least two
@@ -592,10 +593,8 @@ is a ``good enough'' basis for real decentralized services.
 
 After a brief introduction to NDN we compare and relate SSB to NDN in
 three different ways: layering SSB on top of NDN, layering NDN on top
-of SSB, and a hybrid mode where NDN forwarders are made SSB-aware. An
-interesting case is made of a NDN problem that has no equivalence in
-SSB, thus seems to be due to NDN's architectural choices. But some of
-the other problems we encounter point to questions that apply to NDN
+of SSB, and a hybrid mode where NDN forwarders are made SSB-aware.
+Some of the encountered problems point to questions that apply to NDN
 as well SSB.
 
 \subsection{Named Data Networking}
@@ -642,7 +641,7 @@ single Data packets or further sub-manifests.
 In this paper we examine three different configurations: Whether NDN
 can be used as a transport network for SSB, whether a ``SSB-aware''
 NDN layer would work better, and whether SSB could be used as a
-support for NDN networking. Figure~\cite{fig:ssb-and-ndn} shows the
+support for NDN networking. Figure~\ref{fig:ssb-and-ndn} shows the
 three different scenarios which we expand in the following
 subsections. The purpose is to shed light on the sometimes implicit
 assumptions behind SSB and NDN.
@@ -699,7 +698,7 @@ come back to a SSB-aware NDN layer in the next subsection.
 
 A second approach would be to use NDN's LINK objects in order to redirect
 Interests towards the location of the storage provider for a given
-$\langle id\rangle$. This requires a NDN name server~\cite{NDNS} and a
+$\langle id\rangle$. This requires a NDN naming service~\cite{DBLP:conf/icccn/AfanasyevJYTXM017} and a
 permanent storage provider to which the SSB devices would
 have to upload new content. The change in this case is on SSB's side,
 whose community would have to accept a logically centralized name
@@ -837,58 +836,6 @@ an undesirable artifact of NDN, described below, that only shows up
 in NDN but not in a SSB context.
 
 
-\subsection{Fixing NDN Routing Stratgies with Replication?}
-
-The following scenario highlights a problem in NDN when the same
-content is provided from multiple sources. The need for such a setting
-comes either from reliability (cloned repositories) or the concurrent
-streaming and recording of data streams, as shown in
-Fig.~\ref{fig:ndn-anomaly}.
-
-\begin{figure}[htb]
-  \includegraphics[width=0.7\columnwidth]{figs/ndn-anomaly.pdf}
-  \caption{\label{fig:ndn-anomaly}With two NDN sites having registered
-    the same prefix, can the network be smart enough to transparently
-    pull the content from the ``appropriate'' place?}
-\end{figure}
-
-The figure shows a live video stream that is captured by a repository
-for archival purposes. The archive registers the same prefix because,
-in the long run, this is from where the stream can be (re-)
-fetched. The video source makes its content available under the same
-name because it permits clients to consume the live stream, without
-having to wait for the archive to have recorded it. For the client,
-such a setups should be transparent in the spirit of
-information-centric networking.
-
-A problem appears when the client temporarily stops streaming. When
-resuming playout, to which content provider should the network direct
-the Interest messages? The network would have to know whether the
-client resumes from where it stopped (then it has to go to the archive
-site) or whether it wants to reconnect to the live stream. It could
-also be that the camera goes offline for some time, in which case all
-Interests should only go to the repo. The problem is that the network
-has no insights about the different roles (origin, replica) nor the
-semantics of streams (is a request for frame X to the stream's past,
-thus only available on the archive side?).
-
-It should be highlighted that this problem does not exist in an SSB
-setup: content is replicated through push to all interested parties
-i.e., the archive repo as well as the consumer device, both having
-declared to the networks their ``social'' relationship of being
-interested in the source's content. Consumption, as well as archiving,
-happens directly from the replicated log without any on-demand
-protocol in place. In other words, the above network dilemma is an
-artifact of NDN's pull() model that simply does not exist a push
-world.
-
-We do not know how to best fix this in NDN. Can a general strategy be
-engineered for such cases? Or should the three parties engage in a
-SYNC protocol? Especially the last case would lead to continued
-probing (using Interest) whether there was a state change, and
-subsequent pull in fact would implement the push primitive that NDN
-tries to avoid. We suggest that this case merits a closer look at a
-push-only service for NDN.
 
 % ----------------------------------------------------------------------
 \section{Related Work}
@@ -898,7 +845,7 @@ for example {\em secure logging}~\cite{schneier1998cryptographic} and {\em secur
 relative time-stamping}~\cite{haber1990time}. The major innovation of
 SSB is to use these techniques for disseminating data through a gossip
 protocol in a network of untrusted peers, effectively implementing a
-push-based information-centric network.
+push-based information-centric network. SSB's log entries, named by $\langle id:seqno\rangle$, are a plain copy of DONA's naming schema~\ref{Koponen:2007:DNA:1282380.1282402}.
 
 SSB's push-based content dissemintation approach is also
 underlying middle-ware systems like
@@ -1030,15 +977,15 @@ Another area where the replication protocol could be improved is by using privat
 % ----------------------------------------------------------------------
 \section{SSB Challenges}
 
-TODO merge challenges and benefits into a single evaluation? Challenges have been toned down a lot. The idea of divergence could possibly bridge them.
+% TODO merge challenges and benefits into a single evaluation? Challenges have been toned down a lot. The idea of divergence could possibly bridge them.
 
 In this section we critically review limitations and challenges faced by identity-centric systems such as SSB. We omit those problems that apply to SSB in its current state but that would be solved by the extensions presented in the previous section.
 
 \subsection{Privacy}
 
-First and foremost are privacy considerations. SSB is an inherently pseudonymous system, anonymity is fundamentally incompatile with identity-centric message propagation. Furthermore, the architecture discourages ephemeral pseudonyms, favoring the creation of a rather stable network of trust to guide replication. Since all messages are signed, they are not refutable. Finally, all messages are immutable.
+First and foremost are privacy considerations. SSB is an inherently pseudonymous system, anonymity is fundamentally incompatible with identity-centric message propagation. Furthermore, the architecture discourages ephemeral pseudonyms, favoring the creation of a rather stable network of trust to guide replication. Since all messages are signed, they are not refutable. Finally, all messages are immutable.
 
-The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The risks can be reduced by taking care that pseudonyms can not be traced to physical identity, compartmentalizing pseudonyms, using encryption, and only giving the messages to trusted parties. Still, (moderately) care-free participation requires a certain level of privilege. Consequently, applications must cleary inform users about the peculiarities of the virtual space they participate in.
+The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The risks can be reduced by taking care that pseudonyms can not be traced to physical identity, compartmentalizing pseudonyms, using encryption, and only giving the messages to trusted parties. Still, participation currently favors users for whom privacy issues are not critical. Consequently, applications must clearly inform users about the peculiarities of the virtual space they participate in to ensure users don't share information that might be detrimental to them later.
 
 \subsection{Onboarding}
 
@@ -1048,7 +995,7 @@ Data can only be propagated to relays that specifically ask for it. When a new n
 
 The \textit{type} field of SSB messages can be regarded as a global resource without any central coordination regarding its usage. In the worst case, this can lead to multiple applications using the same \textit{type} but in incompatible ways. Namespacing and random types reduce but don't eliminate this problem.
 
-Non-interoperable \textit{types} are a very tangible symptom of a broader theme, the \textit{plurality} of interpretations of message contents. Taken to an extreme, ``the'' community of SSB users could splinter into a multitude of mutually non-understanding fractions that use different kinds of messages or interpretations thereof. Contrary to the philosophy behind more rigid systems, supporting divergence can also be considered a feature, not a bug.
+Non-interoperable \textit{types} are a very tangible symptom of a broader theme, the \textit{plurality} of interpretations of message contents. Taken to an extreme, ``the'' community of SSB users could splinter into a multitude of mutually non-understanding fractions that use different kinds of messages or interpretations thereof. Supporting divergence can also be considered a feature because it mirrors the informal evolution of human languages over time, a property that is often overlooked or actively shunned in more centralized designs.
 
 % TODO?:
 %
@@ -1071,7 +1018,7 @@ Here we summarize some desirable properties of SSB. These go beyond the obvious 
 
 \subsection{Resilience}
 
-An often stated mantra in SSB development is ``no global singletons''. SSB can be characterized as ``collection of decentralized systems'' that overlap to varying degrees. It is consequently highly resilient to failures, whether due to attacks or errors in the code base or in operations. Also, users do not need to depend on any single, priviledged central authority, including cloud-based service providers. Going beyond the common mentality of a grand unified social platform, there are deliberately isolated networks, for example limited to a family, or a specific local area network.
+The design of SSB intentionally avoids ``global singletons'', or centralization aspects requiring consensus. SSB can therefore be characterized as a ``collection of decentralized systems'' that overlap to varying degrees. It is consequently highly resilient to failures, whether due to attacks or errors in the code base or in operations. Also, users do not need to depend on any single, privileged central authority, including cloud-based service providers. Going beyond the common mentality of a grand unified social platform, there are deliberately isolated networks, for example limited to a family, or a specific local area network.
 
 Since SSB applications only interact with the local replicas of logs, complete offline operation is automatically built in. Offline operation is simply a special case of a (temporary) network partition. Because this case occurs so often, the protocol is geared towards handling network partitions gracefully, further contributing to the resilience of SSB. In particular, all operations are delay tolerant.
 
@@ -1083,19 +1030,19 @@ Data loss is highly unlikely since full log replicas are stored throughout the n
 
 \subsection{Efficiency}
 
-Due to the ``subjective reader'' approach, all ssb relays can operate concurrently. There is no need for costly synchronization across nodes. Applications can fully embrace this, for example by using CRDTs. The monotonically growing logs are well-suited for implementing CRDTs and similar techniques.
+Due to the ``subjective reader'' approach, all ssb relays can operate concurrently. There is no need for synchronization across nodes, and the overhead they might incur. Applications can fully embrace this, for example by using CRDTs. The monotonically growing logs are well-suited for implementing CRDTs and similar techniques.
 
-By {\em leveraging} trust instead of trying to eliminate it (like, e.g. in blockchain systems which establish consensus over trustless nodes), there is no need for proof-of-work and similar wasteful techniques. The delay tolerance allows routing layers that can optimize for efficient usage of resources rather than going for minimal latency at any cost. This mentality could go a long way towards systems that are more sustainable than current alternatives. And there are strong arguments that favoring systems that try to eradicate inter-human trust might not lead to a particularly desirable future.
+By {\em leveraging} existing trust behind social interactions, instead of trying to eliminate it (like, e.g. in blockchain systems which establish consensus over trustless nodes), proof-of-work and other computationally-intensive techniques can be replaced by \textit{social signals} encoded as events in a log. The delay tolerance allows routing layers that can optimize for different tradeoffs, for example by minimizing the bandwidth required to disseminate updates rather than minimizing latency. Pushed further, the same approach could lead to infrastructure that is quite efficient in its usage of memory, bandwidth, and energy, making the overall required infrastructure sustainable with less resources than other approaches requiring always available, high-throughput, routing infrastructure. Leveraging existing social trust between participants can therefore provide clear technical benefits.
 
 \subsection{Plurality and Disintermediation}
 
 % TODO: I suppose we could shorten the title to ``Plurality'', but it would be a shame...
 
-The freedom of applications to interpret data in whatever way they see fit reduces the ability of centralized powers to coerce users through protocol design desicions. SSB supports plurality not only for this reason but also as a deliberate strategy to drive evolution. Rather than depending on proprietary app-level APIs, interoperability and the ability to create alternative frontends is the default, resting on the direct access to the replicated data. This also fosters the sharing of data between applications. For example, the `{\small\tt about}' information (Section~\ref{ssect:about}) can be reused by all programs, freeing implementors from duplicating work and creating a coherent user experience across apps.
+The freedom of applications to interpret data in whatever way they see fit increases the agency of users and application writers, to choose how to leverage the data they produce and for what purposes. SSB supports plurality also as a deliberate strategy to drive evolution. Rather than depending on proprietary app-level APIs, interoperability and the ability to create alternative frontends is the default, resting on the direct access to the replicated data. This also fosters the sharing of data between applications. For example, the `{\small\tt about}' information (Section~\ref{ssect:about}) can be reused by all programs, freeing implementors from duplicating work and creating a coherent user experience across apps.
 
-As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features: Potential intermediaries are removed from the development loops. Applications can simply start producing new kinds of log entries, and interoperability works out with all users who share the same interpretation of those messages. Especially when evolving functionality, it is often sufficient to add more fields to a JSON object: Other applications simply ignore them but will continue working.
+As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features: new uses can evolve based on the immediate needs of participants and then spread if the needs are more widely shared. Applications can simply start producing new kinds of log entries, and interoperability works out with all users who share the same interpretation of those messages. Especially when evolving functionality, it is often sufficient to add more fields to a JSON object: Other applications simply ignore them but will continue working.
 
-This results in an organic evolution of features, without ``the system'' ever shutting down. Like any uncoordinated evolutionary process, the result might not be as streamlined as a shiny, pre-envisaged solution, but the evolution is open ended and does not depend on central funding and decision making. Unlike many such proposed streamlined community systems, the continuous and incremental improvement of SSB applications has resulted in a thriving ecosystem that serves the needs of its users, very much like the original Internet envisaged. % And it will continue to evolve.
+This results in an organic evolution of features, without ``the system'' ever shutting down. Like any uncoordinated evolutionary process, this may sometimes lead to dead-ends or less apparent conceptual integrity, but the evolution is open ended, can explore multiple alternatives in parallel, and lower the requirements for governance. Perhaps the value of that approach can best be assessed by the continuous and incremental improvement of SSB applications that has resulted in a thriving ecosystem that is used daily by hundred of users today, and evolves similar to the way the Internet has grown over the last decades.
 
 % TODO is this \textit{too} political/opinionated? Or not political \textit{enough}? We really need that ``sociological computer science'' journal... Feel free to tone this section down. But damn, writing those words \textit{felt good}!
 
@@ -1104,7 +1051,7 @@ This results in an organic evolution of features, without ``the system'' ever sh
 
 We presented secure scuttlebutt, a fully decentralized, peer-to-peer event-sharing protocol. The core novelty is that data replication occurs at the granularity of complete append-only logs of messages by a particular author. This approach leads to a simple, yet efficient replication protocol that lends itself well to a large class of applications. By embracing \textit{eventual} delivery and subjective interpretation of data, SSB gets to sidestep common sources of complexity. A community of multiple thousand users interacting through a variety of different applications confirms the viability of the approach.
 
-The comparison with NDN shows that SSB's paradigm of push-based, identity-centric data transfer comes with a different set of tradeoffs than NDN's choice of pull-based, information-centric data transfer. Focussing on identities leads to challenges with respect to user privacy, but it also enables elegant, decentralized solutions to common problems with information-centric systems. Whether in the context of SSB or more generally, we believe that further study of identity-centric systems will lead to valuable insights and designs.
+The comparison with NDN shows that SSB's paradigm of push-based, identity-centric data transfer comes with a different set of tradeoffs than NDN's choice of pull-based, name-centric data transfer. Focussing on identities leads to challenges with respect to user privacy, but it also enables elegant, decentralized solutions to common problems with information-centric systems. Whether in the context of SSB or more generally, we believe that further study of identity-centric systems will lead to valuable insights and designs.
 
 % ----------------------------------------------------------------------
 \newpage
@@ -1112,3 +1059,59 @@ The comparison with NDN shows that SSB's paradigm of push-based, identity-centri
 \bibliography{main}
 
 \end{document}
+
+An
+interesting case is made of a NDN problem that has no equivalence in
+SSB, thus seems to be due to NDN's architectural choices. But s
+\subsection{Fixing NDN Routing Stratgies with Replication?}
+
+The following scenario highlights a problem in NDN when the same
+content is provided from multiple sources. The need for such a setting
+comes either from reliability (cloned repositories) or the concurrent
+streaming and recording of data streams, as shown in
+Fig.~\ref{fig:ndn-anomaly}.
+
+\begin{figure}[htb]
+  \includegraphics[width=0.5\columnwidth]{figs/ndn-anomaly.pdf}
+  \caption{\label{fig:ndn-anomaly}With two NDN sites having registered
+    the same prefix, can the network be smart enough to transparently
+    pull the content from the ``appropriate'' place?}
+\end{figure}
+
+The figure shows a live video stream that is captured by a repository
+for archival purposes. The archive registers the same prefix because,
+in the long run, this is from where the stream can be (re-)
+fetched. The video source makes its content available under the same
+name because it permits clients to consume the live stream, without
+having to wait for the archive to have recorded it. For the client,
+such a setups should be transparent in the spirit of
+information-centric networking.
+
+A problem appears when the client temporarily stops streaming. When
+resuming playout, to which content provider should the network direct
+the Interest messages? The network would have to know whether the
+client resumes from where it stopped (then it has to go to the archive
+site) or whether it wants to reconnect to the live stream. It could
+also be that the camera goes offline for some time, in which case all
+Interests should only go to the repo. The problem is that the network
+has no insights about the different roles (origin, replica) nor the
+semantics of streams (is a request for frame X to the stream's past,
+thus only available on the archive side?).
+
+It should be highlighted that this problem does not exist in an SSB
+setup: content is replicated through push to all interested parties
+i.e., the archive repo as well as the consumer device, both having
+declared to the networks their ``social'' relationship of being
+interested in the source's content. Consumption, as well as archiving,
+happens directly from the replicated log without any on-demand
+protocol in place. In other words, the above network dilemma is an
+artifact of NDN's pull() model that simply does not exist a push
+world.
+
+We do not know how to best fix this in NDN. Can a general strategy be
+engineered for such cases? Or should the three parties engage in a
+SYNC protocol? Especially the last case would lead to continued
+probing (using Interest) whether there was a state change, and
+subsequent pull in fact would implement the push primitive that NDN
+tries to avoid. We suggest that this case merits a closer look at a
+push-only service for NDN.
