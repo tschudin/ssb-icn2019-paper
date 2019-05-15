@@ -36,13 +36,11 @@
 % ----------------------------------------------------------------------
 \begin{document}
 
-%TODO: Anonymize (can we cite the broadcast-only editorial regardless?)
-
-%TODO: Update title to ``identity-centric'' rather than ``information-centric''?
-
-%TODO: clean up terminology (feed/log/author/identity/id, server/relay/device/node/peer/machine, message/data/entry, ``social graph'', subjectivity (subjective reader) as opposed to plurality (how to interpret messages))
+% TODO: clean up terminology (feed/log/author/identity/id, server/relay/device/node/peer/machine, message/data/entry, ``social graph'', subjectivity (subjective reader) as opposed to plurality (how to interpret messages))
 
 \begin{abstract}
+  TODO rework, shorten
+
   Secure Scuttlebutt (SSB) is a novel peer-to-peer information-centric
   event-sharing protocol and architecture for social apps. In this
   paper we describe SSB's features, its operations as well as the
@@ -94,18 +92,22 @@ and running in pure peer-to-peer mode.
 
 \subsection*{Selective Complete Log Replication}
 
-SSB's spin on the above conceptual model is that all participants {\em
-  replicate the global data pool}, which enables off-line operations,
-avoids redundant data transfers and has become feasible --~at least in
-principle~-- because storage nowadays is a cheap resource, just that
-the sheer volume of social app data prohibits a full
-replication. However, because a participant is mostly interested in
-content from its peers, which is a very small number compared to all
-participants, only portions of the global data pool need be
-replicated. This observation is leveraged in SSB's transport layer
-which is tasked to {\em selectively replicate} the global data pool
-{\em along the edges of the social graph}, as we will explain in
-Section~\ref{sect:XX}.
+SSB relies on the core insight that each  participant is only interested in a \textit{subset} of the global data pool, thus it is feasable to locally store all the data a participant is interested in. To partition the data pool, all data is associated with the \textit{identity} that produced it. Participants select their slice of the data pool by specifying the set of identities whose data they care about. This creates a ``social graph'' along whose edges data flows (Figure~\ref{fig:net-of-people}).
+
+Each participant can publish data to their single-writer, append-only log. This choice of data structure allows efficient replication and verification of the integrity of received data. Replicating these larger slices of the data pool comes with an unusual set of tradeoffs, discussed throughout the paper. As it turns out, replicated logs form a solid foundation for implementing many classes of applications.
+
+% SSB's spin on the above conceptual model is that all participants {\em
+%   replicate the global data pool}, which enables off-line operations,
+% avoids redundant data transfers and has become feasible --~at least in
+% principle~-- because storage nowadays is a cheap resource, just that
+% the sheer volume of social app data prohibits a full
+% replication. However, because a participant is mostly interested in
+% content from its peers, which is a very small number compared to all
+% participants, only portions of the global data pool need be
+% replicated. This observation is leveraged in SSB's transport layer
+% which is tasked to {\em selectively replicate} the global data pool
+% {\em along the edges of the social graph}, as we will explain in
+% Section~\ref{sect:XX}.
 
 \begin{figure}[htb]
   \includegraphics[width=0.9\columnwidth]{figs/net-of-people.pdf}
@@ -114,37 +116,37 @@ Section~\ref{sect:XX}.
     flows through intermediary friends: {\em C} does not follow {\em A}, hence has no log {\em a}. {\em A} and {\em B} follow each other such that when {\em A} follows {\em C}, {\em A} will get {\em C's} log {\em c} via {\em B}.}}
 \end{figure}
 
-A second spin of SSB is that replication is done {\em pro-actively} and
-at the granularity of the {\em complete input by a single peer} to the
-global data pool. This novel way of implementing the global data pool
-model is in stark contrast to current solutions where central server
-repositories hosting this pool are accessed by client software in an
-on-demand fashion, assuming a storage-less end-device. Today's data
-dissemination mode is reactive (client-server protocol to fetch data)
-and piecemeal (only the instantly needed data items are requested,
-possibly multiple times, and bundled with fresh ads, as the client
-does not necessarily cache all requested data). In SSB however, the
-central objects are the {\em complete} collection of a specific peer's
-input to the pool, organized as an append-only log. In
-Sections~\ref{sect:XX} and~\ref{sect:XX} we will explain the
-advantages of this approach (trust, off-line operations and efficient
-real-time notifications), and discuss its drawbacks (index building,
-lack of delete operation, storage bloat, re-keying).
+% A second spin of SSB is that replication is done {\em pro-actively} and
+% at the granularity of the {\em complete input by a single peer} to the
+% global data pool. This novel way of implementing the global data pool
+% model is in stark contrast to current solutions where central server
+% repositories hosting this pool are accessed by client software in an
+% on-demand fashion, assuming a storage-less end-device. Today's data
+% dissemination mode is reactive (client-server protocol to fetch data)
+% and piecemeal (only the instantly needed data items are requested,
+% possibly multiple times, and bundled with fresh ads, as the client
+% does not necessarily cache all requested data). In SSB however, the
+% central objects are the {\em complete} collection of a specific peer's
+% input to the pool, organized as an append-only log. In
+% Sections~\ref{sect:XX} and~\ref{sect:XX} we will explain the
+% advantages of this approach (trust, off-line operations and efficient
+% real-time notifications), and discuss its drawbacks (index building,
+% lack of delete operation, storage bloat, re-keying).
 
 \subsection*{Subjective Reader}
 
-Because replication in SSB is selective and is driven by a peer's
+Because replication in SSB is selective and driven by a peer's
 social graph, different end devices will have access to different sets
-of log replicas, leading to different views of the world which is also
-called a ``subjective reader'' approach. SSB's viewpoint is that this
-is not a deficit but a desirable property: each peer is free to
+of log replicas, leading to different views of the world, which we call
+a ``subjective reader'' approach. SSB's considers this a desirable
+property: each peer is free to
 consider data sources of its own choosing instead of having to feed
 from a centrally provisioned or otherwise converged view. While it is
 possible to implement consensus protocols over SSB, or to designate
 central data aggregators from which many peers consume the
 consolidated outputs, the SSB network itself deliberately doesn't
 offer consensus services nor central content (directories etc). In
-Section~\ref{sect:XX} we will show the implication of this
+Section~\ref{ssect:dapps} we will show the implications of this
 technological choice on the structure of distributed applications that
 can only read from and write to local logs.
 
@@ -155,17 +157,22 @@ core of SSB's protocol avoids several hard problems in distributed
 systems. {\bf First}, it is a radically decentralized approach
 requiring only minimal specification-level coordination among the
 participants but no run-time checks or configuration
-management. Typically, active/active multi-master replication in
-databases, which comes closest to SSB's approach, requires tight
-configuration control while in SSB, existing peers can go offline and
-new peers can come and go at any time, at the price of weak
-consistency guarantees, though. {\bf Second}, although append-only
+management.
+% Typically, active/active multi-master replication in
+% databases, which comes closest to SSB's approach, requires tight
+% configuration control while in SSB, existing peers can go offline and
+% new peers can come and go at any time, at the price of weak
+% consistency guarantees, though.
+{\bf Second}, although append-only
 data structures are well known for their benefits and are at the core
 of crypto currencies' consensus finding, SSB uses logs without any
-consensus properties. Quite on the contrary, SSB completely sidesteps
-consensus but provides the hooks for implementing service abstractions
-like tangles for implementing CRDTs on top of SSB i.e., eventual
-consistency. {\bf Third}, crafting a cryptographic ID system and
+consensus properties. The issue is deliberately sidestepped, but all
+necessary building blocks are provided to higher layers.
+% Quite on the contrary, SSB completely sidesteps
+% consensus but provides the building blocks for implementing it the hooks for implementing service abstractions
+% like tangles for implementing CRDTs on top of SSB i.e., eventual
+% consistency.
+{\bf Third}, crafting a cryptographic ID system and
 maintaining a social graph that informs routing creates a very narrow
 filter: it implements a receiver-driven approach (similar to
 e.g. Named Data Network, but at a higher object granularity) where
@@ -179,9 +186,11 @@ propagated at any forwarding step. {\bf Fourth}, it makes every peer a
 publisher by design. This property goes beyond the decentralized
 approach like DAT~\cite{} or IPFS~\cite{} which assume that there
 exist replication servers but keep the separation between a data
-transport network and a server layer. In SSB, bidirectional
-communications is only possible if both parties {\em are}
-repositories. {\bf Last but not least}, log replication leads to a
+transport network and a server layer.
+% In SSB, bidirectional
+% communications is only possible if both parties {\em are}
+% repositories.
+{\bf Last but not least}, log replication leads to a
 distributed system with inherent high resilience as any communicating
 element MUST replicate the others' logs. In traditional distributed
 systems, coordinating the data persistence as a basis for resilience
@@ -191,7 +200,7 @@ service.
 \subsection*{Comparing SSB to NDN}
 
 A core contribution of this paper is a direct comparison of SSB with
-NDN.  Our analysis reveals strong incompatibilities in at least two
+\textit{named data networking} (NDN). Our analysis reveals strong incompatibilities in at least two
 dimensions. The first is the content dissemination strategy where NDN
 is well known for its PULL pattern while SSB follows a PUSH model.
 \vskip 0.5em
@@ -209,11 +218,11 @@ is well known for its PULL pattern while SSB follows a PUSH model.
 \vskip 0.5em
 
 The second difference is more subtle and seems to be rooted in what
-NDN considers the main focus of networking (as we believe). In NDN,
+NDN considers the main focus of networking. In NDN,
 repositories are an implicit assumption on which the scalability
-claims of NDN rest, and consequently, these repositories --or, to be
-more precise, their global prefixes and all names attached to them--
-are what NDN centers on. SSB, on the other hand, has no global
+claims of NDN rest, and consequently, these repositories --- or, to be
+more precise, their global prefixes and all names attached to them ---
+are points of centralization. SSB, on the other hand, has no global
 constructs, true to is decentralized point of view, and can be called
 {\em identity-centric} in order to contrast it from {\em name-centric}
 NDN.
@@ -224,17 +233,20 @@ SSB would need to emulate NDN (NDN-over-SSB). But in both cases it
 seems that none of the emulated ICN styles could benefit much from the
 hosting substrate, thus remain incompatible. Still, there could be an
 intermediate territory (``SSB-aware NDN'', or vice versa) where in the
-future a synthesis of the two approaches may emerge, but we have not
-progress so far in our analysis, yet.
+future a synthesis of the two approaches may emerge.
+%, but we have not
+%progress so far in our analysis, yet.
 
 
-\subsection*{Scuttlebutt = Information-Centric Gossip}
-
-\ldots\ why this name
-\ldots\ it applies to the app-level, and can apply to the network layer, but doesn't have to: any dissemination method works for gossip.
-\ldots\ some words about the SSB community, available documentation, past evolution, subjective roadmap \cite{ssb-consortium, tarr:ssb-notes,ssb-on-web,ssb-protocol-guide-2018,staltz-roadmap-2019}
+% \subsection*{Scuttlebutt = Information-Centric Gossip}
+%
+% \ldots\ why this name
+% \ldots\ it applies to the app-level, and can apply to the network layer, but doesn't have to: any dissemination method works for gossip.
+% \ldots\ some words about the SSB community, available documentation, past evolution, subjective roadmap \cite{ssb-consortium, tarr:ssb-notes,ssb-on-web,ssb-protocol-guide-2018,staltz-roadmap-2019}
 
 \subsection*{Structure of this paper}
+
+TODO (!)
 
 \ldots
 
