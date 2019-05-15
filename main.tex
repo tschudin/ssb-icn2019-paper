@@ -36,34 +36,34 @@
 % ----------------------------------------------------------------------
 \begin{document}
 
-TODO: Anonymize (can we cite the broadcast-only editorial regardless?)
+%TODO: Anonymize (can we cite the broadcast-only editorial regardless?)
 
-TODO: Update title to ``identity-centric'' rather than ``information-centric''?
+%TODO: Update title to ``identity-centric'' rather than ``information-centric''?
 
-TODO: clean up terminology (feed/log/author/identity/id, server/relay/device/node/peer/machine, message/data/entry, ``social graph'', subjectivity (subjective reader) as opposed to plurality (how to interpret messages))
+%TODO: clean up terminology (feed/log/author/identity/id, server/relay/device/node/peer/machine, message/data/entry, ``social graph'', subjectivity (subjective reader) as opposed to plurality (how to interpret messages))
 
 \begin{abstract}
   Secure Scuttlebutt (SSB) is a novel peer-to-peer information-centric
   event-sharing protocol and architecture for social apps. In this
   paper we describe SSB's features, its operations as well as the
   rationale behind the design. We also provide a comparison with
-  traditional information-centric networking protocols and discuss
+  a traditional information-centric networking architecture and discuss
   SSB's limitations and evolution opportunities.
 
-  At the transport level, SSB is a replication protocol for
-  append-only logs.  applications communicate indirectly by writing to
-  the local node's log and by reading from the locally available
-  replicated logs. From these, each app instance constructs its own
-  intepretation of the shared app state (an approach called
-  ``subjective reader'').  Scaling is achieved through in-network
-  caching of the immutable log updates and by routing the content
-  along the social graph.
+%  At the transport level, SSB is a replication protocol for
+%  append-only logs.  applications communicate indirectly by writing to
+%  the local node's log and by reading from the locally available
+%  replicated logs. From these, each app instance constructs its own
+%  intepretation of the shared app state (an approach called
+%  ``subjective reader'').  Scaling is achieved through in-network
+%  caching of the immutable log updates and by routing the content
+%  along the social graph.
 
-  SSB's current set of applications include classical social media
-  apps (chat, with end-to-end encryption and meta-data privacy), game
-  and lifestyle apps (chess, book reviews) as well as technical
-  applications like a p2p git, a shared file system, or a social
-  backup app for crypto keys using a secret sharing protocol.
+%  SSB's current set of applications include classical social media
+%  apps (chat, with end-to-end encryption and meta-data privacy), game
+%  and lifestyle apps (chess, book reviews) as well as technical
+%  applications like a p2p git, a shared file system, or a social
+%  backup app for crypto keys using a secret sharing protocol.
 \end{abstract}
 
 \maketitle
@@ -188,7 +188,7 @@ systems, coordinating the data persistence as a basis for resilience
 is often an add-on task, or requires at least a special recovery
 service.
 
-\subsection{NDN discussion (needs better title)}
+\subsection*{Comparing SSB to NDN}
 
 A core contribution of this paper is a direct comparison of SSB with
 NDN.  Our analysis reveals strong incompatibilities in at least two
@@ -835,7 +835,7 @@ streaming and recording of data streams, as shown in
 Fig.~\ref{fig:ndn-anomaly}.
 
 \begin{figure}[htb]
-  \includegraphics[width=0.7\columnwidth]{figs/ndn-anomaly.pdf}
+  \includegraphics[width=0.5\columnwidth]{figs/ndn-anomaly.pdf}
   \caption{\label{fig:ndn-anomaly}With two NDN sites having registered
     the same prefix, can the network be smart enough to transparently
     pull the content from the ``appropriate'' place?}
@@ -1093,7 +1093,7 @@ This results in an organic evolution of features, without ``the system'' ever sh
 
 We presented secure scuttlebutt, a fully decentralized, peer-to-peer event-sharing protocol. The core novelty is that data replication occurs at the granularity of complete append-only logs of messages by a particular author. This approach leads to a simple, yet efficient replication protocol that lends itself well to a large class of applications. By embracing \textit{eventual} delivery and subjective interpretation of data, SSB gets to sidestep common sources of complexity. A community of multiple thousand users interacting through a variety of different applications confirms the viability of the approach.
 
-The comparison with NDN shows that SSB's paradigm of push-based, identity-centric data transfer comes with a different set of tradeoffs than NDN's choice of pull-based, information-centric data transfer. Focussing on identities leads to challenges with respect to user privacy, but it also enables elegant, decentralized solutions to common problems with information-centric systems. Whether in the context of SSB or more generally, we believe that further study of identity-centric systems will lead to valuable insights and designs.
+The comparison with NDN shows that SSB's paradigm of push-based, identity-centric data transfer comes with a different set of tradeoffs than NDN's choice of pull-based, name-centric data transfer. Focussing on identities leads to challenges with respect to user privacy, but it also enables elegant, decentralized solutions to common problems with information-centric systems. Whether in the context of SSB or more generally, we believe that further study of identity-centric systems will lead to valuable insights and designs.
 
 % ----------------------------------------------------------------------
 \newpage
