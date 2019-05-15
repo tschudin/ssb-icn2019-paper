@@ -1,7 +1,8 @@
 % ssb-paper-2018/main.tex
 
-\documentclass[10pt,sigconf]{acmart}
+\documentclass[10pt,sigconf,rewiew]{acmart}
 % \documentclass[sigconf]{acmart}
+\settopmatter{printfolios=true}
 
 \title{Secure Scuttlebutt: An Identity-Centric Protocol for Subjective and Decentralized Applications }
 
@@ -181,7 +182,7 @@ entries) and monotonicity of the updates without additional key and
 certificate material, guaranteeing that only conformant traffic is
 propagated at any forwarding step. {\bf Fourth}, it makes every peer a
 publisher by design. This property goes beyond the decentralized
-approach like DAT~\cite{} or IPFS~\cite{} which assume that there
+approach like DAT~\cite{datproject} or IPFS~\cite{benet2014ipfs} which assume that there
 exist replication servers but keep the separation between a data
 transport network and a server layer.
 % In SSB, bidirectional
@@ -243,13 +244,12 @@ future a synthesis of the two approaches may emerge.
 
 \subsection*{Structure of this paper}
 
-TODO (!)
-
-\ldots
+We start out by giving an overview of the SSB protocol in Section \ref{sect:architecture}. Next we describe common patterns of how applications can be built on SSB (Section \ref{sect:apps}). We show how SSB relates to other networking protocols, first through a detailed comparison with NDN (Section \ref{sect:NDN}) and then in the broader context of related work (Section \ref{sect:relwork}). We conclude the paper with an outlook on some of the ``work in progress'' (Section \ref{sec:wip}) and an evaluation of the problems (Section \ref{sect:nay}) and benefits (Section \ref{sect:yay}) of the ssb approach.
 
 
 % ----------------------------------------------------------------------
 \section{SSB Architecture and Protocol}
+\label{sect:architecture}
 
 In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. Since anybody can generate a random keypair with very low probability of multiple peers generating the same keypair, no central authority is necessary for introducing users to the system. Conceptually, SSB is a network of identities that connect to each other (physical topology) and share mutual or unilateral interest in the other peer's data (social graph), as shown in Figure~\ref{fig:net-of-people}. A node running the SSB protocol is called a \textit{relay}.
 
@@ -317,6 +317,7 @@ In other words, the core logical replication protocol by which a relay serves it
 
 % ----------------------------------------------------------------------
 \section{Distributed Apps and Data Structures over SSB}
+\label{sect:apps}
 
 The replication model of SSB enables many collaborative applications to be implemented easily by abstracting much of the complexity in distributing the updates. However, implementing such applications still comes with challenges. To introduce them, we first discuss in detail the implementation of a user directory to introduce the implementation approach, then briefly cover other applications currently in use, and finally discuss some core issues that are shared between all applications and can be captured with the tangle data structure.
 
@@ -804,13 +805,14 @@ ICN.
 
 % ----------------------------------------------------------------------
 \section{Related Work}
+\label{sect:relwork}
 
 Some basic ideas behind SSB can be traced back to the nineties, like
 for example {\em secure logging}~\cite{schneier1998cryptographic} and {\em secure
 relative time-stamping}~\cite{haber1990time}. The major innovation of
 SSB is to use these techniques for disseminating data through a gossip
 protocol in a network of untrusted peers, effectively implementing a
-push-based information-centric network. SSB's log entries, named by $\langle id:seqno\rangle$, are a plain copy of DONA's naming schema~\ref{Koponen:2007:DNA:1282380.1282402}.
+push-based information-centric network. SSB's log entries, named by $\langle id:seqno\rangle$, are a plain copy of DONA's naming schema~\cite{Koponen:2007:DNA:1282380.1282402}.
 
 SSB's push-based content dissemintation approach is also
 underlying middle-ware systems like
@@ -837,6 +839,7 @@ interact directly with the secured single-author logs.
 % ----------------------------------------------------------------------
 
 \section{SSB's ``Work in Progress''}
+\label{sec:wip}
 
 So far we have mostly restricted our presentation to those features that are implemented today as part of SSB. In this section we will describe further extensions, namely a potential revision of SSB's log format and the operational challenges for scaling SSB beyond its user base of slightly more than ten thousand users.
 
@@ -941,6 +944,7 @@ Another area where the replication protocol could be improved is by using privat
 
 % ----------------------------------------------------------------------
 \section{SSB Challenges}
+\label{sect:nay}
 
 % TODO merge challenges and benefits into a single evaluation? Challenges have been toned down a lot. The idea of divergence could possibly bridge them.
 
@@ -978,6 +982,7 @@ Non-interoperable \textit{types} are a very tangible symptom of a broader theme,
 
 % ----------------------------------------------------------------------
 \section{Benefits}
+\label{sect:yay}
 
 Here we summarize some desirable properties of SSB. These go beyond the obvious productivity gains for application developers who don't need to implement encryption, authentication and synchronization, as well as the automatic replication of the content through SSB's push approach.
 
