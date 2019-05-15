@@ -1018,31 +1018,25 @@ Another area where the replication protocol could be improved is by using privat
 % ----------------------------------------------------------------------
 \section{SSB Challenges}
 
-In this section we critically review some of the limitations and challenges faced by push-based, identity-centric systems in general and SSB in particular. We omit those problems that apply to SSB in its current state but that would be solved by the extensions presented in the previous section.
+TODO merge challenges and benefits into a single evaluation? Challenges have been toned down a lot. The idea of divergence could possibly bridge them.
+
+In this section we critically review limitations and challenges faced by identity-centric systems such as SSB. We omit those problems that apply to SSB in its current state but that would be solved by the extensions presented in the previous section.
 
 \subsection{Privacy}
 
 First and foremost are privacy considerations. SSB is an inherently pseudonymous system, anonymity is fundamentally incompatile with identity-centric message propagation. Furthermore, the architecture discourages ephemeral pseudonyms, favoring the creation of a rather stable network of trust to guide replication. Since all messages are signed, they are not refutable. Finally, all messages are immutable.
 
-The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The act of publishing messages is a risky one, reserved to those who hold a lot of privilege. The risks can be reduced by taking care that pseudonyms can not be traced to physical identity, compartmentalizing pseudonyms, using encryption, and only giving the messages to trusted parties. Yet the fundamental risk can never be fully mitigated. Consequently, applications must cleary inform users about the peculiarities of the virtual space they participate in.
+The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The risks can be reduced by taking care that pseudonyms can not be traced to physical identity, compartmentalizing pseudonyms, using encryption, and only giving the messages to trusted parties. Still, (moderately) care-free participation requires a certain level of privilege. Consequently, applications must cleary inform users about the peculiarities of the virtual space they participate in.
 
 \subsection{Onboarding}
 
-TODO ``pull-only'' has a different meaning here than with NDN. Find better terminology. Also TODO: Is "onboarding" a suitable choice of terminology?
-
-The pull-only approach of SSB also poses some challenges when onboarding new users. Nobody will pull in their messages, they won't be propagated through the network. The SSB community uses multiple approaches to solve this problem. Pubs can issue \textit{invite codes}. When a user sends such a code to the pub, the pub automatically follows the user, requesting their messages in the process. Invite codes can be distributed out-of-band (commonly through websites, but also on physical pieces of papers). As an additional onboarding mechanism, the reference server uses lan multicast to discover earby peers. This allows local onboarding where an established user can follow a new user in the same lan. The \textit{manyverse} application uses yet another mechanism, it provides a global DHT to connect users.
+Data can only be propagated to relays that specifically ask for it. When a new node joins the system, it can only participate effectively once someone subscribes to its feed. The SSB community approaches this ``onboarding'' with multiple techniques. Pubs can issue \textit{invite codes} out-of-band. When a user sends such a code to the pub, the pub automatically follows the user, requesting their messages in the process. As an additional onboarding mechanism, the reference server uses lan multicast to discover nearby peers. This allows local onboarding where an established user can follow a new user in the same lan.
 
 \subsection{Coordination}
 
-The \textit{type} field of SSB messages can be regarded as a global resource without any central coordination regarding its usage. In the worst case, this can lead to multiple applications using the same \textit{type} but in incompatible ways. To mitigate this risk, applications are encouraged to namespace types (comparable to e.g. Java package naming guidelines). An alternative are large random type strings. In particular, a \textit{type} could be the hash of a message that describes the intention behind that \textit{type}.
+The \textit{type} field of SSB messages can be regarded as a global resource without any central coordination regarding its usage. In the worst case, this can lead to multiple applications using the same \textit{type} but in incompatible ways. Namespacing and random types reduce but don't eliminate this problem.
 
-Non-interoperable \textit{types} are a very tangible symptom of a broader theme, the \textit{plurality} of interpretationa of message contents. Taken to an extreme, the community of SSB users could splinter into a multitude of mutually non-understanding fractions that use different kinds of messages or interpretations thereof. Whether the fact that the protocol allows such a divergence is actually a negative property is up for debate --- the system has been deliberately designed this way. But this approach certainly runs counter to the philosophy behind more rigid, centralized systems.
-
-\subsection{Scalability}
-
-A more pragmatic problem is that of scalability: To support replication, full logs have to be stored. While this could be mitigated through mechanisms of partial replication, it is still necessary to store a potentially unbounded number of messages. This boils down to the general fact that all data that is to be propagated needs to be stored \textit{somewhere}. But SSB has stronger expactations about what should be stored than other protocols.
-
-TODO: This section seems somewhat trivial. Remove it?
+Non-interoperable \textit{types} are a very tangible symptom of a broader theme, the \textit{plurality} of interpretations of message contents. Taken to an extreme, ``the'' community of SSB users could splinter into a multitude of mutually non-understanding fractions that use different kinds of messages or interpretations thereof. Contrary to the philosophy behind more rigid systems, supporting divergence can also be considered a feature, not a bug.
 
 % TODO?:
 %
