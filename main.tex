@@ -120,7 +120,7 @@ model is in stark contrast to current solutions where central server
 repositories hosting this pool are accessed by client software in an
 on-demand fashion, assuming a storage-less end-device. Today's data
 dissemination mode is reactive (client-server protocol to fetch data)
-and piece meal (only the instantly needed data items are requested,
+and piecemeal (only the instantly needed data items are requested,
 possibly multiple times, and bundled with fresh ads, as the client
 does not necessarily cache all requested data). In SSB however, the
 central objects are the {\em complete} collection of a specific peer's
@@ -136,7 +136,7 @@ Because replication in SSB is selective and is driven by a peer's
 social graph, different end devices will have access to different sets
 of log replicas, leading to different views of the world which is also
 called a ``subjective reader'' approach. SSB's viewpoint is that this
-is not a deficit but a desirable property: Each peer is free to
+is not a deficit but a desirable property: each peer is free to
 consider data sources of its own choosing instead of having to feed
 from a centrally provisioned or otherwise converged view. While it is
 possible to implement consensus protocols over SSB, or to designate
@@ -214,7 +214,7 @@ claims of NDN rest, and consequently, these repositories --or, to be
 more precise, their global prefixes and all names attached to them--
 are what NDN centers on. SSB, on the other hand, has no global
 constructs, true to is decentralized point of view, and can be called
-{\em name-centric} in order to contrast it from {\em name-centric}
+{\em identity-centric} in order to contrast it from {\em name-centric}
 NDN.
 
 We dedicate a full Section~\ref{sect:NDN} to this discussion where we examine
@@ -285,11 +285,11 @@ In addition to this primary replication mechanism, SSB provides two other ways o
 Beyond replicating logs and checking the validity of update messages, an SSB relay offers an API to its peers. Peers can host arbitrary programs that issue RPCs to the relay over an IPC mechanism. The exposed functionality includes appending to the peer's log, reading from logs, specifying which logs a relay should replicate, and fetching blobs and out-of-order messages.
 % SSB thus becomes a platform for building applications, encapsulating the complexity of data replication.
 
-The reference implementation of the SSB relay, written in JavaScript, also includes a mechanism for loading {\em plugins} into the relay to extend its functionality. There are a few default plugins: Conceptually these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin scans the relay's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the relay to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph.
+The reference implementation of the SSB relay~\cite{ssb-server}, written in JavaScript, also includes a mechanism for loading {\em plugins} into the relay to extend its functionality. There are a few default plugins: Conceptually these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin~\cite{ssb-friends} scans the relay's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the relay to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph.
 
-Beyond ``befriending'' other users through {\tt follow} messages, a SSB user can control the shape of its social graph via special {\tt block} messages which limit the transitive log replication. Both the {\em follow} as well as {\tt block} messages are overheard by relays, through scanning all received log updates, and inform them about where updates should be delivered (or not). Decisions about whom to replicate can be --and in the current system is-- guided by the content of the very data that is replicated. By storing the relevant information inside the author's log (as opposed to a local or central database), other peers can use this informtion to guide their decisions.
+Beyond ``befriending'' other users through {\tt follow} messages, a SSB user can control the shape of its social graph via special {\tt block} messages which limit the transitive log replication. Both the {\tt follow} as well as {\tt block} messages are overheard by relays, through scanning all received log updates, and inform them about where updates should be delivered (or not). Decisions about whom to replicate can be --and in the current system is-- guided by the content of the very data that is replicated. By storing the relevant information inside the author's log (as opposed to a local or central database), other peers can use this informtion to guide their decisions.
 
-The overlay network also makes use of logs to store configuration information, in this case the SSB\_ID-to-IP\_address mapping: operators publish the static ip addresses of highly-available relays (called {\em pubs}) to their log. When a SSB leaf node needs to connect to the overlay, the responsible plugin can scan any locallay available log replica for this information.
+The overlay network also makes use of logs to store configuration information, in this case the SSB\_ID-to-IP\_address mapping: operators publish the static ip addresses of highly-available relays (called {\em pubs}) to their log. When a SSB leaf node needs to connect to the overlay, the responsible plugin can scan any locally available log replica for this information.
 
 \subsection*{SSB's Layered Architecture}
 
@@ -303,7 +303,7 @@ It is worth noticing that SBB spans three independent layers of protocols. The m
 
 Next (below) is the specific mechanism by which relays exchange data. The default RPC mechanism is one option, but alternative mechanisms such as distribution via a sneakernet could also be deployed. Different peers that do not share a common replication mechanism could still interact indirectly, as long as there are some relays that understand multiple replication protocols.
 
-In other words, the core logical replication protocol by which a relay serves its clients is fully independent from the actual dissamination protocols. And finally, the publishing and interpretation of data in the form of messages is again a separate affair that is layered on top of the thin waist.
+In other words, the core logical replication protocol by which a relay serves its clients is fully independent from the actual dissemination protocols. And finally, the publishing and interpretation of data in the form of messages is again a separate affair that is layered on top of the thin waist.
 
 % ----------------------------------------------------------------------
 \section{Distributed Apps and Data Structures over SSB}
@@ -477,7 +477,7 @@ on local database support for organizing the data contained in the logs.
 Typically a map-reduce strategy is used where the map phase filters
 the logs and the reduce actions computes the latest application state.
 
-In the user directory application (Sect.~\ref{}), the filtering is
+In the user directory application (Sect.~\ref{ssect:about}), the filtering is
 done by selecting only {\tt about} entries for a specific target ID
 and the reduce action consists in accumulating the latest key-value
 pairs such that a more recent key-value pair replaces an older one if
@@ -525,7 +525,7 @@ list of posts and being able to record a post's submission time, leads
 to more complex client software that must prepare for and defend
 against a broad range of adversarial data found in the logs.
 
-Storing this transitive closure of application-level graphs in a space-efficient way such that it can be quickly queried and efficiently updated is a difficult but well-studied problem in the database literature~\cite{jin2012scarab}~\cite{yildirim2013dagger}. It should be possible to leverage some properties of SSB to get higher-quality results. The immutability of messages reduces the number of cases when dynamically maintaining the index structure, and the fact that each feed forms a total order can be utilized to efficiently encode the relation. Designing and implementing a general framework for performing causal ordering queries on SSB messages would be both an interesting research topic and a powerful tool for building applications
+Storing this transitive closure of application-level graphs in a space-efficient way such that it can be quickly queried and efficiently updated is a difficult but well-studied problem in the database literature~\cite{jin2012scarab,yildirim2013dagger}. It should be possible to leverage some properties of SSB to get higher-quality results. The immutability of messages reduces the number of cases when dynamically maintaining the index structure, and the fact that each feed forms a total order can be utilized to efficiently encode the relation. Designing and implementing a general framework for performing causal ordering queries on SSB messages would be both an interesting research topic and a powerful tool for building applications
 
 \subsection{Synchronization and Eventual Consistency}
 \label{Section:Tangle}
@@ -541,7 +541,7 @@ state (if they share the same log set) after sufficient replication
 progress.
 
 Eventual consistency is the hallmark of Conflict-free Replicated Data
-Types (CRDTs, see~\cite{}) which are directly applicable to the SSB
+Types (CRDTs, see~\cite{shapiro2011conflict}) which are directly applicable to the SSB
 setting as they only assume a reliable and (sometimes) in-order
 delivery of update messages. Potentially, CRDTs permit to implement
 global data structures featuring eventual consistency without
@@ -555,7 +555,7 @@ applications relying on reduction via set union may learn from state
 that stems from beyond the circle of followed peer. More research is
 needed to understand the constraints brought by the combination of
 coordination-less interaction with partial log replication, but SSB's
-rich set of applications used on a daily basis is a encouraging sign
+rich set of applications used on a daily basis is an encouraging sign
 that eventual consistency in combination with subjective replication
 is a ``good enough'' basis for real decentralized services.
 
@@ -592,7 +592,7 @@ NDN is a receiver-driven datagram access protocol: The receiver has to
 request content by name --in a so called {\tt Interest} packet-- and
 at most one matching content is returned in a corresponding {\tt Data}
 packet. The Data packet includes the content's name and is signed such
-that a forwarding nodes can verify the correctness of the
+that a forwarding node can verify the correctness of the
 name-to-content binding (content was not tampered with). Checking the validity of a signature requires
 additional certification data which a forwarding node can fetch using
 the standard {\tt Interest/Data} packet pattern. Validated data
@@ -621,13 +621,13 @@ as fetching content that is larger than the 4KB datagram size-- use
 name prediction (e.g., sequence numbers as part of the name): Several
 Interests are sent ahead without waiting for the first Interest to be
 answered. If name prediction is not available,
-manifests~\cite{manifest} can be used i.e., a datagram is returned in
+manifests~\cite{manifest} can be used, i.e. a datagram is returned in
 lieu of the content which contains a sequence of names pointing to
 single Data packets or further sub-manifests.
 
 \subsection{Layering (or Merging) of SSB and NDN}
 
-In this paper we examin three different configurations: Whether NDN
+In this paper we examine three different configurations: Whether NDN
 can be used as a transport network for SSB, whether a ``SSB-aware''
 NDN layer would work better, and whether SSB could be used as a
 support for NDN networking. Figure~\cite{fig:ssb-and-ndn} shows the
@@ -650,7 +650,7 @@ abstracts away from the wire format: A SSB
 log entry for \mbox{$\langle id:seqno\rangle$} would become\\
   \centerline{\tt D('/ssb/logs/<id>/<seqno>', content, signature)} \\
 where {\tt content} includes the name of the previous log entry.
-In order to support access to a log entry via it hash, all content
+In order to support access to a log entry via its hash, all content
 would also be published under\\
 \centerline{\tt
   D('/ssb/sha256/<hashval>', content, signature)}
@@ -711,7 +711,7 @@ could be made SSB-aware. This would require that NDN inspects the logs
 in order to learn about the social graph. In fact, it would promote
 NDN forwarders to become SSB nodes that replicate SSB content (instead
 of a name server infrastructure and dedicated repo providers). A new,
-corresponding forwarding strategy doesn't requires routing entries as
+corresponding forwarding strategy doesn't require routing entries as
 it simply floods incoming interests that cannot be satisfied from the
 local replicas to all SSB+NDN neighbors along the social graph.
 
@@ -737,7 +737,7 @@ An interesting thought experiment is to reverse the layering,
 stress-testing SSB in this case. Is SSB universal enough so that one
 can ``emulate'' NDN over SSB (see the third subfigure of
 Fig.~\ref{fig:ssb-and-ndn})? SSB would have to implement three
-distinct NDN features: the hierarchical name space, and the pull-model
+distinct NDN features: the hierarchical name space, the pull-model
 and NDN's trust system.
 
 Again assuming rough equivalence of NDN data packets and SSB log
@@ -801,7 +801,7 @@ One can also draw the following picture: NDN works with repo IDs
 (prefixes) on top if which we have IDs for content (= content names
 extending a repo ID). In NDN, IDs have no role for the receiver or in
 the replication process except that forwarding validates the origin of
-data items. On the other hand, these repo IDs must be global routable
+data items. On the other hand, these repo IDs must be globally routable
 through some unspecified routing protocol outside the NDN specs. SSB
 also has producer-side IDs, but it is mandatory that clients also have
 an ID because otherwise they could not publish their replication needs
@@ -835,16 +835,16 @@ Fig.~\ref{fig:ndn-anomaly}.
 
 \begin{figure}[htb]
   \includegraphics[width=0.7\columnwidth]{figs/ndn-anomaly.pdf}
-  \caption{\label{fig:ssb-and-ndn}With two NDN sites having registered
+  \caption{\label{fig:ndn-anomaly}With two NDN sites having registered
     the same prefix, can the network be smart enough to transparently
     pull the content from the ``appropriate'' place?}
 \end{figure}
 
-The figure shows a life video stream that is captured by a repository
+The figure shows a live video stream that is captured by a repository
 for archival purposes. The archive registers the same prefix because,
 in the long run, this is from where the stream can be (re-)
 fetched. The video source makes its content available under the same
-name because it permits clients to consume the life stream, without
+name because it permits clients to consume the live stream, without
 having to wait for the archive to have recorded it. For the client,
 such a setups should be transparent in the spirit of
 information-centric networking.
@@ -852,8 +852,8 @@ information-centric networking.
 A problem appears when the client temporarily stops streaming. When
 resuming playout, to which content provider should the network direct
 the Interest messages? The network would have to know whether the
-client resumes from where it stoped (then it has to go to the archive
-site) or whether it wants to reconnect to the life stream. It could
+client resumes from where it stopped (then it has to go to the archive
+site) or whether it wants to reconnect to the live stream. It could
 also be that the camera goes offline for some time, in which case all
 Interests should only go to the repo. The problem is that the network
 has no insights about the different roles (origin, replica) nor the
@@ -874,7 +874,7 @@ We do not know how to best fix this in NDN. Can a general strategy be
 engineered for such cases? Or should the three parties engage in a
 SYNC protocol? Especially the last case would lead to continued
 probing (using Interest) whether there was a state change, and
-subsequent pull in fact would inplement the push primitive that NDN
+subsequent pull in fact would implement the push primitive that NDN
 tries to avoid. We suggest that this case merits a closer look at a
 push-only service for NDN.
 
@@ -1024,7 +1024,7 @@ The pull-only approach of SSB also poses some challenges when onboarding new use
 
 The \textit{type} field of SSB messages can be regarded as a global resource without any central coordination regarding its usage. In the worst case, this can lead to multiple applications using the same \textit{type} but in incompatible ways. To mitigate this risk, applications are encouraged to namespace types (comparable to e.g. Java package naming guidelines). An alternative are large random type strings. In particular, a \textit{type} could be the hash of a message that describes the intention behind that \textit{type}.
 
-Non-interoperable \textit{types} are a very tangible symptom of a broader theme, the \textit{plurality} of interpretationa of message contents. Taken to an extreme, the community of SSB users could splinter into a multitude of mutually non-understanding fractions that use different kinds of messages or interpretations thereof. Whether the fact that the protocol allows such a divergence is actually a negative property is up for debate --- the system has been deliberately designed this way. But this approach certainly runs counter to the philosophy behind more rigid, centralized systems.
+Non-interoperable \textit{types} are a very tangible symptom of a broader theme, the \textit{plurality} of interpretation of message contents. Taken to an extreme, the community of SSB users could splinter into a multitude of mutually non-understanding fractions that use different kinds of messages or interpretations thereof. Whether the fact that the protocol allows such a divergence is actually a negative property is up for debate --- the system has been deliberately designed this way. But this approach certainly runs counter to the philosophy behind more rigid, centralized systems.
 
 \subsection{Scalability}
 
@@ -1075,7 +1075,7 @@ By {\em leveraging} trust instead of trying to eliminate it (like, e.g. in block
 
 The freedom of applications to interpret data in whatever way they see fit reduces the ability of centralized powers to coerce users through protocol design desicions. SSB supports plurality not only for this reason but also as a deliberate strategy to drive evolution. Rather than depending on a proprietary app-level APIs, interoperability and the ability to create alternative frontends is the default, resting on the direct access to the replicated data. This does not exclude the sharing of data between applications. For example, the `{\small\tt about}' information (Section~\ref{ssect:about}) can be reused by all programs, freeing implementors from duplicating work and creating a coherent user experience across apps.
 
-As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features: Potential intermediaris are removed from the development loops. Applications can simply start producing new kinds of log entries, and interoperability works out with all users who share the same interpretation of those messages. Especially when evolving functionality, it is often sufficient to add more entries to a JSON object: Other applications simply ignore them but will continue working.
+As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features: Potential intermediaries are removed from the development loops. Applications can simply start producing new kinds of log entries, and interoperability works out with all users who share the same interpretation of those messages. Especially when evolving functionality, it is often sufficient to add more entries to a JSON object: Other applications simply ignore them but will continue working.
 
 This results in an organic evolution of features, without ``the system'' ever shutting down. Like any uncoordinated evolutionary process, the result might not be as streamlined as a shiny, pre-envisaged solution, but the evolution is open ended and does not depend on central funding and decision making. Unlike many such proposed streamlined community systems, the continuous and incremental improvement of SSB applications has resulted in a thriving ecosystem that serves the needs of thousands of users, very much like the original Internet envisaged. % And it will continue to evolve.
 
