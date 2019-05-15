@@ -568,8 +568,8 @@ is a ``good enough'' basis for real decentralized services.
 % between users/developers, which simplified the implementation and enabled a
 % faster bootstrap of useful applications with limited development resources, as
 % most of the work has been done voluntarily or self-funded so far. The community
-f% ully understands that causal ordering and well-defined data structures based
-o% n Tangles~(Section~\ref{Section:Tangle}) would make the implementations more
+% fully understands that causal ordering and well-defined data structures based
+% on Tangles~(Section~\ref{Section:Tangle}) would make the implementations more
 % robust in contexts with lower levels of trust and is currently in the process
 % of adopting them to make the applications more robust.
 
@@ -970,7 +970,7 @@ In SSB, there is no mechanism for terminating a log. But it would be straightfor
 
 \subsection{Multi-Device Support}
 
-If two different devices used the same SSB identity to publish messages concurrently, this would result in a forked feed with the consequence that peer relays would stop propagating at least one, of not both log extensions. It is thus recommended to create a distinct identity for each device to eliminate this risk. This however leads to problems such as being unable to decrypt encrypted messages on some device because they have been encrypted to the public key used by a different device. The user also needs to follow or block identities once per device.
+If two different devices used the same SSB identity to publish messages concurrently, this would result in a forked feed with the consequence that peer relays would stop propagating at least one, if not both log extensions. It is thus recommended to create a distinct identity for each device to eliminate this risk. This however leads to problems such as being unable to decrypt encrypted messages on some device because they have been encrypted to the public key used by a different device. The user also needs to follow or block identities once per device.
 
 One approach could be to develop schemes that allow sharing the same private key across multiple devices to allow read-access, while enforcing mutual exclusion on writes.
 
