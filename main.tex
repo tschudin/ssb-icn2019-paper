@@ -110,7 +110,7 @@ Each participant can publish data to their single-writer, append-only log. This 
 % Section~\ref{sect:XX}.
 
 \begin{figure}[htb]
-  \includegraphics[width=0.9\columnwidth]{figs/net-of-people.pdf}
+  \includegraphics[width=0.9\columnwidth]{figs/staltz-iop.pdf}
   \caption{SSB's ``Internet of Identities'' -- {\rm\small Users A, B and C
     replicate logs ({\em a, b, \ldots}) based on whom they follow i.e., content
     flows through intermediary friends: {\em C} does not follow {\em A}, hence has no log {\em a}. {\em A} and {\em B} follow each other such that when {\em A} follows {\em C}, {\em A} will get {\em C's} log {\em c} via {\em B}.}\label{fig:net-of-people}}
@@ -321,17 +321,7 @@ In other words, the core logical replication protocol by which a relay serves it
 % ----------------------------------------------------------------------
 \section{Distributed Apps and Data Structures over SSB}
 
-TODO: rewrite/update this introduction
-{\em Wordsmithing needed:}
-The goal of this section: show how SSB's distributed apps can reconstruct
-the app's state by parsing the logs, and operate on the app state by
-writing to the peer's log. We give more details for SSB's user
-directory and also list and quickly characterize other existing
-SSB apps. A crucial (performance) aspect is incremental indexing
-which we expand on in the subsection about the Kappa approach. More
-node-local support in form of libraries and conventions at the level
-of log entries is discussed in the subsection on tangles.
-
+The replication model of SSB enables many collaborative applications to be implemented easily by abstracting much of the complexity in distributing the updates. However, implementing such applications still comes with challenges. To introduce them, we first discuss in detail the implementation of a user directory to introduce the implementation approach, then briefly cover other applications currently in use, and finally discuss some core issues that are shared between all applications and can be captured with the tangle data structure.
 
 \subsection{Example: SSB's user directory}
 \label{ssect:about}
@@ -391,7 +381,7 @@ for a given ID.
 \label{Section:AppProfiles}
 
 Multiple applications have been written by contributors and are used daily by
-the SSB community. We briefly present selected examples because they represent
+the SSB community. The following selected examples represent 
 alternatives to well-known services and they illustrate both opportunities and
 challenges of communication through replicated append-only logs.
 
@@ -399,58 +389,34 @@ challenges of communication through replicated append-only logs.
 replicates git-based version-controlled code repositories through contributors
 logs. It provides an encoding of repositories in SSB logs, a bridge to
 interoperate with git repositories, and a web-based viewer to browse
-repositories. The object model of Git~\cite{chacon2014pro}, based on immutable
-hash-referenced objects organized in a chain of commits, has a similar
-structure to SSB's logs, making the mapping natural. Hash objects are blobs and
-commits are messages in individual append-only logs.  Other git operations,
-such as creating a repository, creating merge commits, creating a branch, or
-requesting the merging of an alternative branch (\textit{pull-request}) to a
-core maintainer, are all SSB messages. This model provides automatic
-distribution of code repositories and their updates through the replication of
-SSB logs. Many developers can also update and perform operations on the
-\textit{same} repository, as defined by its creation message, independently.
-Consensus on the "official" master branch and its latest commit is enforced
-through social coordination because the developers of the community know and
-trust each other. Nonetheless, in case of concurrent updates to the same branch
-in the same repository~\cite{git-ssb-push-conflict}, the git bridge will create
-multiple branches when a local git repository is updated. A user can then
-resolve the fork by merging the diverging branches and updating the repository.
-Referencing both concurrent updates in a later merge commit in effect resolves
+repositories. The object model of Git~\cite{chacon2014pro} has a similar
+structure to SSB's logs. Other git operations, such as creating repository, are 
+all SSB messages. Since, any user can independently update \textit{same} repository, as defined by its creation message, Consensus on the "official" master branch and its latest commit is enforced
+through social coordination. In case of concurrent updates to the same branch
+in the same repository~\cite{git-ssb-push-conflict}, referencing both concurrent 
+updates in a later merge commit in effect resolves
 the ambiguity through a tangle extension~(Section~\ref{Section:Tangle}).
 
 \textit{Ssb-chess}~\cite{ssb-chess} is a correspondence chess application in
 which players can invite one another to play, alternatively share their next
-move until the game ends, and external observers can comment on the game. The
-core data structure that represent a game is a linked list with nodes
-representing chess moves alternating between the two participants' logs. The
-detection of invalid moves is performed by the user interface using a
-validation library, because participants are trusted to only publish valid
-moves on their feed. This latter assumption was made because games are played
-between friends in a non-competitive setting. In effect, the validity of the
-latest move is implicitly confirmed by the next player choosing to follow with
-another move because if they were to disagree on the validity, the conflict can
-be handled outside the game and the game can be abandoned. Moreover, a chess
-application is easy to encode in append-only logs because the rules of chess
-preclude concurrency, i.e. at any time there is always only one of the two
-participants that is permitted to modify the state of the chess board by making
-a move. The game state also cannot be corrupted by external parties because
-only the participants, explicitly mentioned in the original invitation, are
-allowed to modify the state of the game. Any non-participant extending the game
-with their own move is simply ignored.
+move until the game ends, and external observers can comment on the game. 
+Because the rules of chess preclude concurrency,  i.e. at any time there is always
+ only one of the two participants that is permitted to modify the state of the chess board, 
+ a game can easily be represented as a linked list with nodes
+representing chess moves alternating between the two participants' logs. 
+Moreover only the participants, explicitly mentioned in the original invitation, are
+allowed to modify the state of the game. The implementation does not require
+concurrency management and is therefore conceptually straight-forward.
 
 \textit{Gatherings}~\cite{patch-gatherings} are alternatives to
 Meetup~\cite{meetup.com} that enables participants to signal their intention to
-attend or not attend to physical events. Gatherings can be public, in which
-case anyone that replicates a log will see them, or private, in which case only
-explicitly-invited people will be notified of the event and may signal their
-intention. A gathering is defined by its creation message but otherwise has no
-fixed properties. Anyone that has a reference to the creation message may
+attend or not attend to physical events. A gathering is defined by its creation message 
+but otherwise has no fixed properties. Anyone that has a reference to the creation message may
 change its properties, such as location, start and end dates, description, and
 image, by publishing an update message. The value of those properties are the
 most recent set by anyone. Initially, recency was determined by the time of
 creation, as reported by the user's client implementation (\textit{self-stated
-creation time}). While this required trust in other users, practice has shown
-that the hypothesis was reasonable. To be more robust to potential invalid
+creation time}). To be more robust to potential invalid
 timestamps however, some client implementations have started using the time at
 which message updates are \textit{received}, then disambiguate using the
 self-stated creation time.
@@ -469,13 +435,10 @@ self-stated creation time.
 % of the poll are done by the same user, and therefore works quite well with the
 % SSB communication model.
 
-These applications show how the SSB communication model greatly simplifies the
-infrastructure required to build social applications since none of the previous
-examples have to deal with issues of distribution of messages. The fact that a
-small community with a dozen or so of core developers, which are self-funded
+The fact that a small community with a dozen or so of core developers, which are self-funded
 and working mostly voluntarily, could produce alternative applications that
 work well enough to be used daily suggests the SSB communication model does
-make the implementation of common social applications simpler.
+make the implementation of common social applications (relatively) simple.
 
 \subsection{Running Distributed Applications over Replicated Logs}
 \label{ssect:dapps}
