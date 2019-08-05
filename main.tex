@@ -1,6 +1,6 @@
 % ssb-paper-2018/main.tex
 
-\documentclass[10pt,sigconf,rewiew]{acmart}
+\documentclass[9pt,sigconf,rewiew]{acmart}
 % \documentclass[sigconf]{acmart}
 \settopmatter{printfolios=true}
 
@@ -379,7 +379,7 @@ for a given ID.
 \label{Section:AppProfiles}
 
 Multiple applications have been written by contributors and are used daily by
-the SSB community. The following selected examples represent 
+the SSB community. The following selected examples represent
 alternatives to well-known services and they illustrate both opportunities and
 challenges of communication through replicated append-only logs.
 
@@ -388,27 +388,27 @@ replicates git-based version-controlled code repositories through contributors
 logs. It provides an encoding of repositories in SSB logs, a bridge to
 interoperate with git repositories, and a web-based viewer to browse
 repositories. The object model of Git~\cite{chacon2014pro} has a similar
-structure to SSB's logs. Other git operations, such as creating repository, are 
+structure to SSB's logs. Other git operations, such as creating repository, are
 all SSB messages. Since, any user can independently update \textit{same} repository, as defined by its creation message, Consensus on the "official" master branch and its latest commit is enforced
 through social coordination. In case of concurrent updates to the same branch
-in the same repository~\cite{git-ssb-push-conflict}, referencing both concurrent 
+in the same repository~\cite{git-ssb-push-conflict}, referencing both concurrent
 updates in a later merge commit in effect resolves
 the ambiguity through a tangle extension~(Section~\ref{Section:Tangle}).
 
 \textit{Ssb-chess}~\cite{ssb-chess} is a correspondence chess application in
 which players can invite one another to play, alternatively share their next
-move until the game ends, and external observers can comment on the game. 
+move until the game ends, and external observers can comment on the game.
 Because the rules of chess preclude concurrency,  i.e. at any time there is always
- only one of the two participants that is permitted to modify the state of the chess board, 
+ only one of the two participants that is permitted to modify the state of the chess board,
  a game can easily be represented as a linked list with nodes
-representing chess moves alternating between the two participants' logs. 
+representing chess moves alternating between the two participants' logs.
 Moreover only the participants, explicitly mentioned in the original invitation, are
 allowed to modify the state of the game. The implementation does not require
 concurrency management and is therefore conceptually straight-forward.
 
 \textit{Gatherings}~\cite{patch-gatherings} are alternatives to
 Meetup~\cite{meetup.com} that enables participants to signal their intention to
-attend or not attend to physical events. A gathering is defined by its creation message 
+attend or not attend to physical events. A gathering is defined by its creation message
 but otherwise has no fixed properties. Anyone that has a reference to the creation message may
 change its properties, such as location, start and end dates, description, and
 image, by publishing an update message. The value of those properties are the
@@ -525,7 +525,7 @@ consistency is always modulo that fact. For example, like counts will
 be eventually consistent with respect to the same set of followed
 peers but not globally, at least if they are directly counted. Other
 applications relying on reduction via set union may learn from state
-that stems from beyond the circle of followed peer. 
+that stems from beyond the circle of followed peer.
 
 More research is needed to understand the constraints brought by the combination of
 coordination-less interaction with partial log replication, but SSB's
