@@ -812,7 +812,7 @@ for example {\em secure logging}~\cite{schneier1998cryptographic} and {\em secur
 relative time-stamping}~\cite{haber1990time}. The major innovation of
 SSB is to use these techniques for disseminating data through a gossip
 protocol in a network of untrusted peers, effectively implementing a
-push-based information-centric network. SSB's log entries, named by $\langle id:seqno\rangle$, are a plain copy of DONA's naming schema~\cite{Koponen:2007:DNA:1282380.1282402}.
+push-based information-centric network. SSB's log entries, named by $\langle id:seqno\rangle$, are a special case of DONA's naming schema~\cite{Koponen:2007:DNA:1282380.1282402}, sequence numbers can be regarded as totally ordered labels.
 
 SSB's push-based content dissemintation approach is also
 underlying middle-ware systems like
@@ -821,6 +821,8 @@ pool abstraction where distributed processes can store and consume
 objects without locality references: The effects of a {\tt wr()}
 operation are propagated automatically such that processes being
 blocked on a {\tt rd()} could be resumed immediately.
+
+In the area of delay tolerant networking, systems like {\em HAGGLE}~\cite{scott2006haggle} and {\em SCAMPI}~\cite{pitkanen2012scampi} also aim to leverage social dynamics between users. These systems correlate social proximity with physical network connectivity to enhance performnce and availiability of applications. SSB primarily uses social dynamics to determine {\em which} data should flow to {\em whom}, not {\em how} it should flow to {\em where}. In SSB, identities and their relations are first-class, whereas HAGGLE and SCAMPI rely on inferring them by extensively monitoring user activity.
 
 The use of logs itself has a long tradition in distributed systems,
 especially in operating systems ({\em write-ahead logs} in journaling file
