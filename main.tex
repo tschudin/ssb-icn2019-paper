@@ -253,7 +253,7 @@ We start out by giving an overview of the SSB protocol in Section \ref{sect:arch
 
 In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. Since anybody can generate a random keypair with very low probability of multiple peers generating the same keypair, no central authority is necessary for introducing users to the system. Conceptually, SSB is a network of identities that connect to each other (physical topology) and share mutual or unilateral interest in the other peer's data (social graph), as shown in Figure~\ref{fig:net-of-people}. A node running the SSB protocol is called a \textit{relay}.
 
-The {\em single-writer append-only logs} of SSB consist of  messages that include a {\em backlink} in form of a cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blockchain is that each SSB user unilaterally maintains their own log and cryptographically signs all their (and only their) messages. Messages whose backlink points to a message in a different log (i.e. from a different author) are considered invalid and will not be processed by SSB peers.
+The {\em single-writer append-only logs} of SSB consist of  messages that include a {\em backlink} in the form of a cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blockchain is that each SSB user unilaterally maintains their own log and cryptographically signs all their (and only their) messages. Messages whose backlink points to a message in a different log (i.e. from a different author) are considered invalid and will not be processed by SSB peers.
 
 %These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB server checks that every message has exactly zero or one incoming backlinks. If it has more than one, the feed is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log can not be appended to anymore.
 
@@ -286,7 +286,7 @@ SSB defines a format for encoding specifically the public keys of identities and
 
 \subsection*{Replication}
 
-The principal function of SSB relays is to connect to other relays and exchange log {\em updates}. To do so, they maintain a point-to-point encrypted~\cite{tarr2015secrethandshake} overlay network over which they run a gossip protocol. When two relays start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a peer receives a lower sequence number for a feed than it sent, it transmits the log messages that the peer is lacking. If at a later point a new message of the feed becomes available to a relay, it is automtically \textit{pushed} to the connected peers. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, which itself is maintained via the plumtree~\cite{leitao2007epidemic} protocol. In classic peer-to-peer fashion, clients (leaf nodes) are no different than relays except that they usually include some graphical user interface and perform application logic.
+The principal function of SSB relays is to connect to other relays and exchange log {\em updates}. To do so, they maintain a point-to-point encrypted~\cite{tarr2015secrethandshake} overlay network over which they run a gossip protocol. When two relays start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a peer receives a lower sequence number for a feed than it sent, it transmits the log messages that the peer is lacking. If at a later point a new message of the feed becomes available to a relay, it is automatically \textit{pushed} to the connected peers. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, which itself is maintained via the plumtree~\cite{leitao2007epidemic} protocol. In classic peer-to-peer fashion, clients (leaf nodes) are no different than relays except that they usually include some graphical user interface and perform application logic.
 
 In addition to this primary replication mechanism, SSB provides two other ways of exchanging information. {\em Blobs} are content-addressed pieces of free-form data, typically images or other documents larger than the 4KB limit, that are referenced from log entries but are not part of any log. They are not widely disseminated automatically, but rather fetched on demand via a simple request-flooding protocol. {\em Out-of-order messages} are a similar mechanism to address and fetch log entries on demand via their hashes.
 
@@ -295,7 +295,7 @@ In addition to this primary replication mechanism, SSB provides two other ways o
 Beyond replicating logs and checking the validity of update messages, an SSB relay offers an API to its peers. Peers can host arbitrary programs that issue RPCs to the relay over an IPC mechanism. The exposed functionality includes appending to the peer's log, reading from logs, specifying which logs a relay should replicate, and fetching blobs and out-of-order messages.
 % SSB thus becomes a platform for building applications, encapsulating the complexity of data replication.
 
-The reference implementation of the SSB relay~\cite{ssb-server}, written in JavaScript, also includes a mechanism for loading {\em plugins} into the relay to extend its functionality. There are a few default plugins: Conceptually these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin~\cite{ssb-friends} scans the relay's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the relay to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph.
+The reference implementation of the SSB relay~\cite{ssb-server}, written in JavaScript, also includes a mechanism for loading {\em plugins} into the relay to extend its functionality. There are a few default plugins: conceptually these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin~\cite{ssb-friends} scans the relay's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the relay to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph.
 
 Beyond ``befriending'' other users through {\tt follow} messages, a SSB user can control the shape of its social graph via special {\tt block} messages which limit the transitive log replication. Both the {\tt follow} as well as {\tt block} messages are overheard by relays, through scanning all received log updates, and inform them about where updates should be delivered (or not). Decisions about whom to replicate can be --and in the current system is-- guided by the content of the very data that is replicated. By storing the relevant information inside the author's log (as opposed to a local or central database), other peers can use this informtion to guide their decisions.
 
@@ -303,7 +303,7 @@ The overlay network also makes use of logs to store configuration information, i
 
 \subsection*{SSB's Layered Architecture}
 
-It is worth noticing that SBB spans three independent layers of protocols. The most fundamental protocol is the message format: All peers need to agree on what consitutes identities, valid messages, and how to compute hashes to address messages and blobs. This is the ``thin waist'' of SSB (see figure~\ref{fig:waist}).
+It is worth noticing that SBB spans three independent layers of protocols. The most fundamental protocol is the message format: all peers need to agree on what consitutes identities, valid messages, and how to compute hashes to address messages and blobs. This is the ``thin waist'' of SSB (see figure~\ref{fig:waist}).
 
 \begin{figure}[htb]
   \includegraphics[width=0.9\columnwidth]{figs/ssb-waist.pdf}
@@ -368,7 +368,7 @@ as well as all IDs which wrote an update for that user).
 There can never be confusion about the sequence or scope of attribute
 assignments because they are orderd by the log (and thus in time) and
 kept separate, per author ID. Note also the presence of the
-``subjective reader'' property: The content of a peer's user database
+``subjective reader'' property: the content of a peer's user database
 is dependent on its position in the social graph. The ``subjective''
 mindset is also visible by letting every user assign attributes to
 anybody, leaving it to the user interface (and human viewer) to select
@@ -560,7 +560,7 @@ as well SSB.
 
 \subsection{Named Data Networking}
 
-NDN is a receiver-driven datagram access protocol: The receiver has to
+NDN is a receiver-driven datagram access protocol: the receiver has to
 request content by name --in a so called {\tt Interest} packet-- and
 at most one matching content is returned in a corresponding {\tt Data}
 packet. The Data packet includes the content's name and is signed such
@@ -590,7 +590,7 @@ deleted.
 
 In such a pull-only communication model, streaming protocols --as well
 as fetching content that is larger than the 4KB datagram size-- use
-name prediction (e.g., sequence numbers as part of the name): Several
+name prediction (e.g., sequence numbers as part of the name): several
 Interests are sent ahead without waiting for the first Interest to be
 answered. If name prediction is not available,
 manifests~\cite{DBLP:conf/infocom/BaugherDNO12} can be used i.e., a datagram is returned in
@@ -599,7 +599,7 @@ single Data packets or further sub-manifests.
 
 \subsection{Layering (or Merging) of SSB and NDN}
 
-In this paper we examine three different configurations: Whether NDN
+In this paper we examine three different configurations: whether NDN
 can be used as a transport network for SSB, whether a ``SSB-aware''
 NDN layer would work better, and whether SSB could be used as a
 support for NDN networking. Figure~\ref{fig:ssb-and-ndn} shows the
@@ -618,7 +618,7 @@ assumptions behind SSB and NDN.
 \label{ssect:ssb-over-ndn}
 
 SSB's smaller than 4KB log entries map perfectly well to NDN if one
-abstracts away from the wire format: A SSB
+abstracts away from the wire format: a SSB
 log entry for \mbox{$\langle id:seqno\rangle$} could be named by\\
   \centerline{\tt D('/ssb/logs/<id>/<seqno>', content, signature)} \\
 where {\tt content} includes the name of the previous log entry.
@@ -720,7 +720,7 @@ and NDN's trust system.
 
 Again assuming rough equivalence of NDN data packets and SSB log
 entries (i.e., a triple $\langle name,content,signature\rangle$), the
-pull-model part is easy to answer: Either some item is already in one
+pull-model part is easy to answer: either some item is already in one
 of the eagerly replicated local logs, or it is not available yet
 (because SSB is push-based).
 
@@ -764,7 +764,7 @@ which we pin to the way IDs are handled.
 NDN has no notion of receiver ID, by design, which has the benefit of
 easy Interest aggregation but also is the basis of the social contract
 with the forwarder (to accept interests from anybody). SSB, however,
-is deeply ID-centric: Only by following (= declaring interest in) some
+is deeply ID-centric: only by following (= declaring interest in) some
 ID, {\em all} its content will be pulled towards the interested
 party. Selective data replication, which requires a bidirectional
 Interest/Data protocol, only would work in SSB if both sides follow
@@ -814,7 +814,7 @@ SSB is to use these techniques for disseminating data through a gossip
 protocol in a network of untrusted peers, effectively implementing a
 push-based information-centric network. SSB's log entries, named by $\langle id:seqno\rangle$, are a special case of DONA's naming schema~\cite{Koponen:2007:DNA:1282380.1282402}, sequence numbers can be regarded as totally ordered labels.
 
-SSB's push-based content dissemintation approach is also
+SSB's push-based content dissemination approach is also
 underlying middle-ware systems like
 {\em Linda}~\cite{Gelernter:1985:GCL:2363.2433}. Linda offers a global data
 pool abstraction where distributed processes can store and consume
