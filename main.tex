@@ -43,8 +43,7 @@
   event-sharing protocol and architecture for social apps. In this
   paper we describe SSB's features, its operations as well as the
   rationale behind the design. We also provide a comparison with
-  a traditional information-centric networking architecture and discuss
-  SSB's limitations and evolution opportunities.
+  Named Data Networking (NDN), an existing information-centric networking architecture, to motivate a larger exploration of the design space for routing protocols. We finally discuss SSB's limitations and evolution opportunities.
 
 %  At the transport level, SSB is a replication protocol for
 %  append-only logs.  applications communicate indirectly by writing to
@@ -136,7 +135,7 @@ Each participant can publish data to their single-writer, append-only log. This 
 Because replication in SSB is selective and driven by a peer's
 social graph, different end devices will have access to different sets
 of log replicas, leading to different views of the world, which we call
-a ``subjective reader'' approach. SSB's considers this a desirable
+a ``subjective reader'' approach. SSB considers this a desirable
 property: each peer is free to
 consider data sources of its own choosing instead of having to feed
 from a centrally provisioned or otherwise converged view. While it is
@@ -172,15 +171,17 @@ necessary building blocks are provided to higher layers.
 % consistency.
 {\bf Third}, crafting a cryptographic ID system and
 maintaining a social graph that informs routing creates a very narrow
-filter: it implements a receiver-driven approach (similar to
-e.g. Named Data Network, but at a higher object granularity) where
-data only flows where it is needed and without imposing any
-fine-grained request/reply protocol. Instead, any dissemination
-technology is adequate, including broadcast and push mode, because
-network elements can verify data validity (due to the logs' signed
-entries) and monotonicity of the updates without additional key and
-certificate material, guaranteeing that only conformant traffic is
-propagated at any forwarding step. {\bf Fourth}, it makes every peer a
+filter: it implements a receiver-driven approach where
+data only flows where it is needed and provides flexibility in the actual data dissemination strategy.
+%without imposing any
+%fine-grained request/reply protocol. 
+%%Instead, any dissemination
+%technology is adequate, including broadcast and push mode, because
+%network elements can verify data validity (due to the logs' signed
+%entries) and monotonicity of the updates without additional key and
+%certificate material, guaranteeing that only valid traffic is
+%propagated at any forwarding step. 
+{\bf Fourth}, it makes every peer a
 publisher by design. This property goes beyond the decentralized
 approach like DAT~\cite{datproject} or IPFS~\cite{benet2014ipfs} which assume that there
 exist replication servers but keep the separation between a data
@@ -190,48 +191,55 @@ transport network and a server layer.
 % repositories.
 {\bf Last but not least}, log replication leads to a
 distributed system with inherent high resilience as any communicating
-element MUST replicate the others' logs. In traditional distributed
+element carries a persistent copy of the data. In traditional distributed
 systems, coordinating the data persistence as a basis for resilience
 is often an add-on task, or requires at least a special recovery
 service.
 
 \subsection*{Comparing SSB to NDN}
 
-A core contribution of this paper is a direct comparison of SSB with
-\textit{named data networking} (NDN). Our analysis reveals strong incompatibilities in at least two
-dimensions. The first is the content dissemination strategy where NDN
-is well known for its PULL pattern while SSB follows a PUSH model.
-\vskip 0.5em
+Despite SSB data replication being currently implemented as an application protocol (layer 7 in the OSI stack~\cite{briscoe2000understanding}), we believe that its underlying principles are worth studying from a routing perspective (layer 3 in the OSI stack) to highlight regions of the design space that could be further investigated. We sketch here some aspects in which SSB differs from \textit{named data networking} (NDN)~\cite{ahlgren2012survey}, a popular proposal for Information-Centric Networking (ICN). A longer exposition of SSB's underlying communication model is available in a separate publication~\cite{tschudin2019broadcast}.
 
-\begin{tabular}{l|c|c|}
-                   &     PULL                  & PUSH \\
-\hline
-  name-centric     & {\bf NDN}     & {\small\em NDN-over-SSB?} \\
-                   &               & {\small\em Sect.~\ref{ssect:ndn-over-ssb}} \\
-\hline
-  identity-centric & {\small\em SSB-over-NDN?} & {\bf SSB}               \\
-                   & {\small\em Sect.~\ref{ssect:ssb-over-ndn}} & \\
-\hline
-\end{tabular}
-\vskip 0.5em
+In SSB, the delivery of information is organized around \textit{named data streams}. The basic unit of addressing is a full log that might still produce new messages in the future (i.e. a stream). The streams guarantee \textit{reliable causal ordering}~\cite{cachin2011introduction}.
 
-The second difference is more subtle and seems to be rooted in what
-NDN considers the main focus of networking. In NDN,
-repositories are an implicit assumption on which the scalability
-claims of NDN rest, and consequently, these repositories --- or, to be
-more precise, their global prefixes and all names attached to them ---
-are points of centralization. SSB, on the other hand, has no global
-constructs, true to is decentralized point of view, and can be called
-{\em identity-centric} in order to contrast it from {\em name-centric}
-NDN.
+Delivery of streams follows a \textit{push model}: once a receiver has expressed interest in a stream, new items are transferred automatically without being requested individually. Flow-control in the current implementation is done implicitly by the TCP connections used to deliver data.
 
-We dedicate a full Section~\ref{sect:NDN} to this discussion where we examine
-whether one could either ``drag'' SSB into NDN (SSB-over-NDN), or what
-SSB would need to emulate NDN (NDN-over-SSB). But in both cases it
-seems that none of the emulated ICN styles could benefit much from the
-hosting substrate, thus remain incompatible. Still, there could be an
-intermediate territory (``SSB-aware NDN'', or vice versa) where in the
-future a synthesis of the two approaches may emerge.
+Streams are tied to a single \textit{identity} with a corresponding \textit{public key}: only this identity can produce new items in the stream with the correct signature.  Because the signature ensures the integrity of the items, they can be served from anywhere and by anybody. The identity producing the stream may therefore be mobile. Moreover, users independently create the key that serves as an identity, streams are therefore \textit{self-certifying}~\cite{mazieres1998selfcertifyingpathnames} and their integrity does not rely on an external trust anchor.
+
+In contrast, NDN embodies quite different design choices. First, the basic elements of networking are \textit{single pieces of data}, identified by hierarchical names similar to paths in a filesystem. Second, data is accessed via a \textit{pull} model: a consumer issues an \textit{interest} in a name, and the network delivers the corresponding data. Third, many NDN schemes rely on a hierarchical trust model to issue certificates that can in turn be used to sign individual pieces of data.\footnote{To be fair, there has already been some proposal, not yet peer-reviewd, to leverage a web of trust model in a decentralized chat application built on top of NDN~\cite{zhu2012chronos}} 
+
+%%A core contribution of this paper is a direct comparison of SSB with
+%%\textit{named data networking} (NDN). Our analysis reveals strong incompatibilities in at least two
+%dimensions. The first is the content dissemination strategy where NDN
+%is well known for its PULL pattern while SSB follows a PUSH model.
+%\vskip 0.5em
+%
+%\begin{tabular}{l|c|c|}
+%                   &     PULL                  & PUSH \\
+%\hline
+%  name-centric     & {\bf NDN}     & {\small\em NDN-over-SSB?} \\
+%                   &               & {\small\em Sect.~\ref{ssect:ndn-over-ssb}} \\
+%\hline
+%  identity-centric & {\small\em SSB-over-NDN?} & {\bf SSB}               \\
+%                   & {\small\em Sect.~\ref{ssect:ssb-over-ndn}} & \\
+%\hline
+%\end{tabular}
+%\vskip 0.5em
+%
+%The second difference is more subtle and seems to be rooted in what
+%NDN considers the main focus of networking. In NDN,
+%repositories are an implicit assumption on which the scalability
+%claims of NDN rest, and consequently, these repositories --- or, to be
+%more precise, their global prefixes and all names attached to them ---
+%are points of centralization. SSB, on the other hand, has no global
+%constructs, true to is decentralized point of view, and can be called
+%{\em identity-centric} in order to contrast it from {\em name-centric}
+%NDN.
+
+It is not clear that either design can subsume the other: one can implement SSB over NDN or the opposite but each option comes with significant runtime costs. Still, there could be an intermediate territory where a future synthesis of the two approaches may emerge. We therefore analyze the trade-offs that appear in various ways of stacking NDN and SSB to enrich the discussion around future developments in ICN.
+
+%Then, after a brief introduction to NDN on a similar conceptual level, we examine how these models can emulate each other. We then use these lessons to sketch a fruitful way of combining SSB with NDN.
+
 %, but we have not
 %progress so far in our analysis, yet.
 
@@ -244,7 +252,7 @@ future a synthesis of the two approaches may emerge.
 
 \subsection*{Structure of this paper}
 
-We start out by giving an overview of the SSB protocol in Section \ref{sect:architecture}. Next we describe common patterns of how applications can be built on SSB (Section \ref{sect:apps}). We show how SSB relates to other networking protocols, first through a detailed comparison with NDN (Section \ref{sect:NDN}) and then in the broader context of related work (Section \ref{sect:relwork}). We conclude the paper with an outlook on some of the ``work in progress'' (Section \ref{sec:wip}) and an evaluation of the problems (Section \ref{sect:nay}) and benefits (Section \ref{sect:yay}) of the ssb approach.
+We start out by giving an overview of the SSB protocol in Section \ref{sect:architecture}. Next we describe common patterns of how applications can be built on SSB (Section \ref{sect:apps}). We show how SSB relates to other networking protocols, first through a detailed comparison with NDN (Section \ref{sect:NDN}) and then in the broader context of related work (Section \ref{sect:relwork}). We conclude the paper with an outlook on some of the ``work in progress'' (Section \ref{sec:wip}) and an evaluation of the problems (Section \ref{sect:nay}) and benefits (Section \ref{sect:yay}) of the SSB approach.
 
 
 % ----------------------------------------------------------------------
