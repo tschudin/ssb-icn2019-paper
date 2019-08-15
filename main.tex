@@ -90,7 +90,7 @@ and running in pure peer-to-peer mode.
 
 \subsection*{Selective Complete Log Replication}
 
-SSB relies on the core insight that each  participant is only interested in a \textit{subset} of the global data pool, thus it is feasable to locally store all the data a participant is interested in. To partition the data pool, all data is associated with the \textit{identity} that produced it. Participants select their slice of the data pool by specifying the set of identities whose data they care about. This creates a ``social graph'' along whose edges data flows (Figure~\ref{fig:net-of-people}).
+SSB relies on the core insight that each  participant is only interested in a \textit{subset} of the global data pool, thus it is feasible to locally store all the data a participant is interested in. To partition the data pool, all data is associated with the \textit{identity} that produced it. Participants select their slice of the data pool by specifying the set of identities whose data they care about. This creates a ``social graph'' along whose edges data flows (Figure~\ref{fig:net-of-people}).
 
 Each participant can publish data to their single-writer, append-only log. This choice of data structure allows efficient replication and verification of the integrity of received data. Replicating these larger slices of the data pool comes with an unusual set of tradeoffs, discussed throughout the paper. As it turns out, replicated logs form a solid foundation for implementing many classes of applications.
 
@@ -319,7 +319,10 @@ In other words, the core logical replication protocol by which a relay serves it
 \section{Distributed Apps and Data Structures over SSB}
 \label{sect:apps}
 
-The replication model of SSB enables many collaborative applications to be implemented easily by abstracting much of the complexity in distributing the updates. However, implementing such applications still comes with challenges. To introduce them, we first discuss in detail the implementation of a user directory to introduce the implementation approach, then briefly cover other applications currently in use, and finally discuss some core issues that are shared between all applications and can be captured with the tangle data structure.
+% TODO: Rework to reflect the actual structure of the section
+% TODO: Make title capitalization uniform
+
+The replication model of SSB enables many collaborative applications to be implemented easily by abstracting much of the complexity in distributing the updates. However, implementing such applications still comes with challenges. To introduce them, we first discuss in detail the implementation of a user directory to introduce the implementation approach, then briefly cover other applications currently in use, and finally discuss some core issues that are shared between all applications.
 
 \subsection{Example: SSB's user directory}
 \label{ssect:about}
@@ -389,11 +392,11 @@ logs. It provides an encoding of repositories in SSB logs, a bridge to
 interoperate with git repositories, and a web-based viewer to browse
 repositories. The object model of Git~\cite{chacon2014pro} has a similar
 structure to SSB's logs. Other git operations, such as creating repository, are
-all SSB messages. Since, any user can independently update \textit{same} repository, as defined by its creation message, Consensus on the "official" master branch and its latest commit is enforced
+all SSB messages. Since, any user can independently update the \textit{same} repository, as defined by its creation message, consensus on the "official" master branch and its latest commit is enforced
 through social coordination. In case of concurrent updates to the same branch
 in the same repository~\cite{git-ssb-push-conflict}, referencing both concurrent
 updates in a later merge commit in effect resolves
-the ambiguity through a tangle extension~(Section~\ref{Section:Tangle}).
+the ambiguity.
 
 \textit{Ssb-chess}~\cite{ssb-chess} is a correspondence chess application in
 which players can invite one another to play, alternatively share their next
@@ -467,7 +470,7 @@ An important aspect is whether the reduction step can be done in an
 incremental fashion by reusing previously computed application state.
 For example, counting the ``likes'' that a post receives works fine:
 incoming log extensions are indexed and if they are of the like type,
-the counter corresponding to the referenced message in incremented.
+the counter corresponding to the referenced message is incremented.
 
 Other applications, however, may need a {\em full} re-evalution of the
 reduce function each time the underlying index changes. An example for
@@ -719,7 +722,7 @@ distinct NDN features: the hierarchical name space, the pull-model
 and NDN's trust system.
 
 Again assuming rough equivalence of NDN data packets and SSB log
-entries (i.e., a triple $\langle name,content,signature\rangle$), the
+entries, i.e. a triple $\langle name,content,signature\rangle$, the
 pull-model part is easy to answer: either some item is already in one
 of the eagerly replicated local logs, or it is not available yet
 (because SSB is push-based).
@@ -818,7 +821,7 @@ SSB's push-based content dissemination approach is also
 underlying middle-ware systems like
 {\em Linda}~\cite{Gelernter:1985:GCL:2363.2433}. Linda offers a global data
 pool abstraction where distributed processes can store and consume
-objects without locality references: The effects of a {\tt wr()}
+objects without locality references: the effects of a {\tt wr()}
 operation are propagated automatically such that processes being
 blocked on a {\tt rd()} could be resumed immediately.
 
@@ -831,10 +834,10 @@ context, resilient event ordering protocols like
 {\em RAFT}~\cite{DBLP:conf/usenix/OngaroO14} have been proposed that also
 rely on replicated logs. Although logs are used at various places of
 distributed systems, this data structure is typically not exposed to
-the commuicating parties, while SSB exactly rests on letting apps
+the communicating parties, while SSB exactly rests on letting apps
 interact directly with the secured single-author logs.
 
-\textit{Selective Hearing}~\cite{meiklejohn2015selective} uses a gossip protocol to disseminate monotonically growing sets of updates to provide a runtime or the Lasp~\cite{meiklejohn2015lasp} programming language. The general architecture is similar to that of SSB, the most striking difference is that Lasp is by design restricted to CRDTs. SSB can be considered more low-level, developers are free to choose a strategy for dealing with concurrency and eventual consistency. Selective hearing was developed in a more traditional research approach, so it glosses over some of the difficult problems encountered in the ``real world'' such as user onboarding and byzantine peers. Their ``practical large scale evaluation''~\cite{meiklejohn2017lasp} consists of 1000 well-controlled nodes running a toy application in the cloud, whereas SSB with is roughly 10000 users is more battle-proven.
+\textit{Selective Hearing}~\cite{meiklejohn2015selective} uses a gossip protocol to disseminate monotonically growing sets of updates to provide a runtime to the Lasp~\cite{meiklejohn2015lasp} programming language. The general architecture is similar to that of SSB, the most striking difference is that Lasp is by design restricted to CRDTs. SSB can be considered more low-level, developers are free to choose a strategy for dealing with concurrency and eventual consistency. Selective hearing was developed in a more traditional research approach, so it glosses over some of the difficult problems encountered in the ``real world'' such as user onboarding and byzantine peers. Their ``practical large scale evaluation''~\cite{meiklejohn2017lasp} consists of 1000 well-controlled nodes running a toy application in the cloud, whereas SSB with its roughly 10000 users is more battle-proven.
 
 % Also contrast with blockchains? (ssb sidesteps consensus and thus proof-of-whatever)
 
@@ -956,7 +959,7 @@ In this section we critically review limitations and challenges faced by identit
 
 SSB is an inherently pseudonymous system, anonymity is fundamentally incompatible with identity-centric message propagation. Furthermore, the architecture discourages ephemeral pseudonyms, favoring the creation of a rather stable network of trust to guide replication. Since all messages are signed, they are not refutable. Finally, all messages are immutable.
 
-The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The risks can be reduced by taking care that pseudonyms can not be traced to physical identity, compartmentalizing pseudonyms, using encryption, and only giving the messages to trusted parties. Still, participation currently favors users for whom privacy issues are not critical. Consequently, applications must clearly inform users about the peculiarities of the virtual space they participate in to ensure users don't share information that might be detrimental to them later.
+The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The risks can be reduced by taking care that pseudonyms cannot be traced to physical identity, compartmentalizing pseudonyms, using encryption, and only giving the messages to trusted parties. Still, participation currently favors users for whom privacy issues are not critical. Consequently, applications must clearly inform users about the peculiarities of the virtual space they participate in to ensure users don't share information that might be detrimental to them later.
 
 \subsection{Onboarding}
 
@@ -1004,7 +1007,7 @@ Since SSB applications only interact with the local replicas of logs, complete o
 
 Due to the ``subjective reader'' approach, all ssb relays can operate concurrently. There is no need for synchronization across nodes, and the overhead they might incur. Applications can fully embrace this, for example by using CRDTs. The monotonically growing logs are well-suited for implementing CRDTs and similar techniques.
 
-By {\em leveraging} existing trust behind social interactions, instead of trying to eliminate it (like, e.g. in blockchain systems which establish consensus over trustless nodes), proof-of-work and other computationally-intensive techniques can be replaced by \textit{social signals} encoded as events in a log. The delay tolerance allows routing layers that can optimize for different tradeoffs, for example by minimizing the bandwidth required to disseminate updates rather than minimizing latency. Pushed further, the same approach could lead to infrastructure that is quite efficient in its usage of memory, bandwidth, and energy, making the overall required infrastructure sustainable with less resources than other approaches requiring always available, high-throughput, routing infrastructure. Leveraging existing social trust between participants can therefore provide clear technical benefits.
+By {\em leveraging} existing trust behind social interactions, instead of trying to eliminate it, e.g. in blockchain systems which establish consensus over trustless nodes, proof-of-work and other computationally-intensive techniques can be replaced by \textit{social signals} encoded as events in a log. The delay tolerance allows routing layers that can optimize for different tradeoffs, for example by minimizing the bandwidth required to disseminate updates rather than minimizing latency. Pushed further, the same approach could lead to infrastructure that is quite efficient in its usage of memory, bandwidth, and energy, making the overall required infrastructure sustainable with less resources than other approaches requiring always available, high-throughput, routing infrastructure. Leveraging existing social trust between participants can therefore provide clear technical benefits.
 
 \subsection{Plurality and Disintermediation}
 
