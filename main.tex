@@ -264,7 +264,7 @@ In contrast, NDN embodies quite different design choices. First, the basic eleme
 %{\em identity-centric} in order to contrast it from {\em name-centric}
 %NDN.
 
-It is not clear that either design can subsume the other: one can implement SSB over NDN or the opposite but each option comes with significant runtime costs. Still, there could be an intermediate territory where a future synthesis of the two approaches may emerge. We therefore analyze the trade-offs that appear in various ways of stacking NDN and SSB to enrich the discussion around future developments in ICN.
+It is not clear that either design can subsume the other: one can implement SSB over NDN or the opposite but each option comes with significant runtime costs. Still, there could be an intermediate territory where a future synthesis of the two approaches may emerge. We therefore analyze the trade-offs that appear in various ways of layering NDN and SSB to enrich the discussion around future developments in ICN.
 
 %Then, after a brief introduction to NDN on a similar conceptual level, we examine how these models can emulate each other. We then use these lessons to sketch a fruitful way of combining SSB with NDN.
 
@@ -591,11 +591,10 @@ is a ``good enough'' basis for real decentralized services.
 \section{Comparing SSB with Named Data Networking (NDN)}
 \label{sect:NDN}
 
-After a brief introduction to NDN we compare and relate SSB to NDN in
-three different ways: layering SSB on top of NDN, layering NDN on top
-of SSB, and a hybrid mode where NDN forwarders are made SSB-aware.
-Some of the encountered problems point to questions that apply to NDN
-as well SSB.
+In this section, after a brief introduction to NDN we compare and relate SSB to NDN in three different ways: layering SSB on top of NDN, layering NDN on top
+of SSB, and a hybrid mode where NDN forwarders are made SSB-aware. Figure~\ref{fig:ssb-and-ndn} illlustrates the
+three different scenarios. The purpose is to shed light on the sometimes implicit
+assumptions behind SSB and NDN and show a larger design space for future ICN developments.
 
 \subsection{Named Data Networking}
 
@@ -636,21 +635,10 @@ manifests~\cite{DBLP:conf/infocom/BaugherDNO12} can be used i.e., a datagram is 
 lieu of the content which contains a sequence of names pointing to
 single Data packets or further sub-manifests.
 
-\subsection{Layering (or Merging) of SSB and NDN}
-
-In this paper we examine three different configurations: whether NDN
-can be used as a transport network for SSB, whether a ``SSB-aware''
-NDN layer would work better, and whether SSB could be used as a
-support for NDN networking. Figure~\ref{fig:ssb-and-ndn} shows the
-three different scenarios which we expand in the following
-subsections. The purpose is to shed light on the sometimes implicit
-assumptions behind SSB and NDN.
-
 \begin{figure}[htb]
   \raggedright
   \includegraphics[width=0.9\columnwidth]{figs/ssb-and-ndn.pdf}
-  \caption{\label{fig:ssb-and-ndn}Three different layerings of SSB and NDN,
-    as discussed in this paper}
+  \caption{\label{fig:ssb-and-ndn}Three different layerings of SSB and NDN.}
 \end{figure}
 
 \subsection{SSB over NDN}
@@ -829,7 +817,7 @@ replicas and packet loss. NDN only validates that a data item's
 signature can be traced back (via publisher IDs) to some trust anchor,
 while ARQ (automatic retransmission request) must be used to recover
 from lost packets. In SSB, the whole log associated with an ID is
-validated (assert strict ordering and completness), which factors out
+validated (assert strict ordering and completeness), which factors out
 difficult tasks to the benefit of the applications (no retransmission
 logic, no need to SYNC).
 
