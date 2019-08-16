@@ -1,0 +1,101 @@
+From noreply@icn19.hotcrp.com Sun Aug  4 12:05:07 2019
+Date: Sun, 4 Aug 2019 12:05:03
+From: ACM ICN 2019 HotCRP <noreply@icn19.hotcrp.com>
+To: Christian Tschudin <christian.tschudin@unibas.ch>
+Subject: [ACM ICN 2019] Camera-Ready Instructions - Submission #19 "Secure Scuttlebutt: An..."
+
+Dear Christian Tschudin,
+
+Congratulations once again for your accepted paper. Please find below
+Camera-Ready Instructions which will help you prepare the final version of
+your paper. Please note, the deadline to submit your camera-ready paper is
+the 21st of August 2019 and submissions will be handled through HotCRP.
+
+
+======== Camera-Ready Instructions ========
+
+Before submitting camera-ready papers, authors of accepted papers will need
+to complete the ACM rights management form. You will be notified once these
+forms are available and ready to sign.
+
+After completing their rights management form, authors will be emailed the
+correct rights management text and bibliographic strip to place within
+their paper. It is essential that authors enter the text into their paper.
+
+As rights management emails are sent from an automated system, there is a
+chance that emails sent will wind up in SPAM folders. Please make sure that
+you and your authors set email SPAM settings to allow emails from
+rightsreview@acm.org.
+
+ACM ICN 2019 will use HotCRP for collecting camera-ready submission
+(https://icn19.hotcrp.com/). Please prepare your paper according to the
+instructions provided below:
+
++ Full papers should be no more than ten (10) single-spaced pages,
+including figures, tables, appendices, etc. References do NOT count against
+the page limit. In order to ensure adequate citation of related work, extra
+pages of references are allowed (and encouraged).
++ For short papers the limit is six (6) pages, also EXCLUDING references.
++ Font size for the main text is the same as in the provided template (9
+pt). This is in contrast to the 10pt font in the initial submission to
+allow authors extra space to address reviewers’ comments.
+
++ For posters and demos the page limit is two (2) single-spaced pages,
+INCLUDING references.
++ Include names and affiliations of all authors in the title page.
++ Please do NOT number the pages of your camera-ready paper.
+
++ ACM MSWord and LaTeX templates and related information may be found at:
+https://www.acm.org/publications/proceedings-template
+Please follow the instructions on that page for using the templates to
+prepare your camera-ready paper copy.
+++ NOTE: LaTeX users should select the “sigconf” document subclass
+("\documentclass[sigconf]{acmart}”)
+++ NOTE: ACM templates use a body text font size of 9pt. Please DO NOT
+alter this size for your camera-ready paper. This is in contrast to the
+10pt font requested for your initial submission. This is to allow authors
+some extra space to address reviewers’ comments.
+++ NOTE: please contact the conference publications chair Tian Song
+<songtian@bit.edu.cn> if you have questions about use of the ACM document
+templates or generating your camera-ready final paper copy.
+
++ As described on the above template webpage, the authors should provide
+proper indexing information in the final version according to the ACM
+Computing Classification System (CCS). More information about the ACM CCS
+is available on ACM CCS website.
++ Please provide an abstract of no more than 250 words.
++ Submit the source files and PDF (Portable Document Format) of your
+camera-ready paper. Avoid using any special characters or non-standard
+fonts. We must be able to display and print your submission exactly as we
+receive it using only standard tools and printers, so we strongly suggest
+that you use only standard fonts embedded in the PDF file.
++ Ensure that labels and symbols used in graphs and figures are legible,
+including the font sizes of tick marks, axis labels, legends, etc.
+Limit the file size to less than 15MB. Contact the TPC chairs if you have a
+file larger than 15 MB.
+
+PDF files must be prepared using Type 1, OpenType, or TrueType fonts
+(scalable), and not Type 3 (bit-mapped). Virtually all modern LaTeX
+installations will meet this condition; only use of the very old original
+Computer Modern fonts is likely to cause a problem.
+
+All fonts must be embedded within your submitted PDF file. Any PDF that is
+not uploaded with fonts embedded will need to be corrected. Most modern
+document preparation workflows now embed fonts by default. To help you
+confirm that this requirement is met and fix it if necessary, ACM has
+provided some documentation at:
+https://www.acm.org/binaries/content/assets/publications/word-to-pdf-instructions-.txt.
+
+Note however the the portion of this documentation concerned with
+generating PDF files is quite old and assumes the use of Adobe Acrobat
+Distiller; please consult local expertise or the conference publications
+chair if this doesn’t match your needs.
+
+=====================================
+
+Please contact the publications chair Tian Song <songtian@bit.edu.cn>, or
+the TPC Chairs <icn19-tpc@ee.ucl.ac.uk> as appropriate with any questions
+or concerns.
+
+- ACM ICN 2019 TPC Chairs
+John & Yiannis.
