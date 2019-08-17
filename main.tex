@@ -592,18 +592,17 @@ is a ``good enough'' basis for real decentralized services.
 \label{sect:NDN}
 
 In this section, after a brief introduction to NDN we compare and relate SSB to NDN in three different ways: layering SSB on top of NDN, layering NDN on top
-of SSB, and a hybrid mode where NDN forwarders are made SSB-aware. Figure~\ref{fig:ssb-and-ndn} illlustrates the
-three different scenarios. The purpose is to shed light on the sometimes implicit
-assumptions behind SSB and NDN and show a larger design space for future ICN developments.
+of SSB, and a hybrid mode that combines features of both. The purpose is to shed light on the sometimes implicit assumptions behind SSB and NDN and show a larger design space for future ICN developments.
 
 \subsection{Named Data Networking}
 
-NDN is a receiver-driven datagram access protocol: the receiver has to
-request content by name --in a so called {\tt Interest} packet-- and
+NDN is an evolution of the Content-Centric Networking proposal that was publicly presented by Van Jacobson in 2006 (CITE). Both aim to address shortcomings of using the Internet Protocol (IP) (CITE) for data dissemination from a single source to a number of users. In the IP, the routing layer only deals with the delivery of data packets from a source to a destination, regardless of their content: when multiple users request the same content from different machines, the routing layer therefore has to deal with redundant data transfers and is prone to content tampering by intermediate routing nodes. Some of the major goals of NDN are therefore to optimize data distribution for large content providers while guaranteeing the integrity of content. NDN currently achieves those aims by: (1) initiating data transfers \textit{after} the interested users are known by the network (\textit{pull-model}), (2) leveraging \textit{existing certificate infrastructure} to authenticate the content, and (3) \textit{naming} individual pieces of data, using a naming scheme that reflects the hierarchical organization of major content providers, such as universities, governments, and major media companies.
+
+Technically, a receiver has to request content by name --in a so called {\tt Interest} packet-- and
 at most one matching content is returned in a corresponding {\tt Data}
 packet. The Data packet includes the content's name and is signed such
 that a forwarding node can verify the correctness of the
-name-to-content binding (content was not tampered with). Checking the validity of a signature requires
+name-to-content binding. Checking the validity of a signature requires
 additional certification data which a forwarding node can fetch using
 the standard {\tt Interest/Data} packet pattern. Validated data
 packets are typically cached such that subsequent requests for the
@@ -614,9 +613,7 @@ same name can be served from in-network memory.
 <-- D('/ndn/some/item', data, signature)
 \end{verbatim}
 
-In order to facilitate routing of Interest packets towards a data
-source or a data repository, NDN uses a hierarchical name
-space. Routing rules are based on name prefixes, typically aggregating
+Routing rules are based on name prefixes, which aggregates
 all data items made available by a publisher. In a forwarder node,
 incoming Interest packets are matched against these prefixes on a
 longest-prefix matching basis, yielding the interface(s) to where an
@@ -626,14 +623,85 @@ table). On the return path, a data packet is copied to all interfaces
 from where a corresponding interest came in, and the PIT entry is
 deleted.
 
-In such a pull-only communication model, streaming protocols --as well
-as fetching content that is larger than the 4KB datagram size-- use
-name prediction (e.g., sequence numbers as part of the name): several
-Interests are sent ahead without waiting for the first Interest to be
-answered. If name prediction is not available,
-manifests~\cite{DBLP:conf/infocom/BaugherDNO12} can be used i.e., a datagram is returned in
-lieu of the content which contains a sequence of names pointing to
-single Data packets or further sub-manifests.
+%%In such a pull-only communication model, streaming protocols --as well
+%as fetching content that is larger than the 4KB datagram size-- use
+%name prediction (e.g., sequence numbers as part of the name): several
+%Interests are sent ahead without waiting for the first Interest to be
+%answered. If name prediction is not available,
+%manifests~\cite{DBLP:conf/infocom/BaugherDNO12} can be used i.e., a datagram is returned in
+%lieu of the content which contains a sequence of names pointing to
+%single Data packets or further sub-manifests.
+
+\subsection{Comparison with SSB}
+
+Similar to NDN, SSB organizes distribution around content produced instead of the machines that are interacting. In contrast to NDN, the design aims at \textit{individual users as publishers} instead of larger organizations with the following technical consequences. SSB addresses a \textit{stream of data} tied to a particular identity instead of individual data items. SSB \textit{eagerly broadcasts} content as soon as possible (\textit{push-model}), leveraging the abundant storage available in peer's devices for replication. The replicas are determined based on social interests between \textit{peers}, achieving a similar aim as the \texttt{Interest} packet but once for an entire \textit{stream} of data and with persistence by default, rather than for each individual items with temporary caching. SSB also avoids the use of certificate authorities to enable anyone to become a publisher, instead relying on self-generated \textit{cryptographic keys} and \textit{trust} between peers established over repeated social interactions to establish credibility in a particular identity.  
+
+The different application context of NDN and SSB has an impact on ID management. In NDN, users (content consumers) are anonymous and their interest in the same content can be aggregated if it comes from shared routes. In SSB however, recipients also have an ID with an associated log in which they declare their interest in another ID. Said differently, NDN works with repo IDs
+(prefixes) on top of which we have IDs for content (= content names
+extending a repo ID). In NDN, IDs have no role for the receiver or in
+the replication process except that forwarding validates the origin of
+data items. On the other hand, these repo IDs must be globally routable
+through some unspecified routing protocol outside the NDN specs. SSB
+also has producer-side IDs, but it is mandatory that clients also have
+an ID because otherwise they could not publish their replication needs
+(towards SSB's routing logic).
+
+%Finally, IDs have different weights in NDN and SSB when it comes to
+%replicas and packet loss. NDN only validates that a data item's
+%signature can be traced back (via publisher IDs) to some trust anchor,
+%while ARQ (automatic retransmission request) must be used to recover
+%from lost packets. In SSB, the whole log associated with an ID is
+%validated (assert strict ordering and completeness), which factors out
+%difficult tasks to the benefit of the applications (no retransmission
+%logic, no need to SYNC).
+
+
+%is deeply ID-centric: only by following (= declaring interest in) some
+%ID, {\em all} its content will be pulled towards the interested
+%party.
+
+
+%focus on \textit{named data} and SSB focus on \textit{identity-streams} has deeper implications than would seem at first sight.
+%
+%NDN has no notion of receiver ID, by design, which has the benefit of
+%easy Interest aggregation but also is the basis of the social contract
+%with the forwarder (to accept interests from anybody). SSB, however,
+%is deeply ID-centric: only by following (= declaring interest in) some
+%ID, {\em all} its content will be pulled towards the interested
+%party. Selective data replication, which requires a bidirectional
+%Interest/Data protocol, only works in SSB if both sides follow
+%each other. NDN, on the other hand, introduces repositories
+%(somehow linked to routing prefixes) as quasi-IDs: NDN's service model
+%is to interconnect (many) ID-less clients with (few) identified repos.
+
+%One can also draw the following picture: NDN works with repo IDs
+%(prefixes) on top of which we have IDs for content (= content names
+%extending a repo ID). In NDN, IDs have no role for the receiver or in
+%the replication process except that forwarding validates the origin of
+%data items. On the other hand, these repo IDs must be globally routable
+%through some unspecified routing protocol outside the NDN specs. SSB
+%also has producer-side IDs, but it is mandatory that clients also have
+%an ID because otherwise they could not publish their replication needs
+%(towards SSB's routing logic).
+
+%Finally, IDs have different weights in NDN and SSB when it comes to
+%replicas and packet loss. NDN only validates that a data item's
+%signature can be traced back (via publisher IDs) to some trust anchor,
+%while ARQ (automatic retransmission request) must be used to recover
+%from lost packets. In SSB, the whole log associated with an ID is
+%validated (assert strict ordering and completeness), which factors out
+%difficult tasks to the benefit of the applications (no retransmission
+%logic, no need to SYNC).
+%
+%As a conclusion, we were surprised that we could not find easy ways
+%how NDN can be made suitable for implementing SSB, or be enhanced by
+%SSB properties without turning NDN into SSB, and how it looks
+%difficult to port NDN to SSB without deviating from SSB's
+%decentralization agenda. Beside the push/pull theme, SSB's
+%identity-centric approach seems to introduce a yet unseen element for
+%ICN.
+
+The differences in design decisions make the combination of SSB and NDN hard to efficiently layer one way or the other, as shown in the next sections and illustrated in Figure~\ref{fig:ssb-and-ndn}.
 
 \begin{figure}[htb]
   \raggedright
@@ -644,104 +712,89 @@ single Data packets or further sub-manifests.
 \subsection{SSB over NDN}
 \label{ssect:ssb-over-ndn}
 
-SSB's smaller than 4KB log entries map perfectly well to NDN if one
-abstracts away from the wire format: a SSB
-log entry for \mbox{$\langle id:seqno\rangle$} could be named by\\
-  \centerline{\tt D('/ssb/logs/<id>/<seqno>', content, signature)} \\
-where {\tt content} includes the name of the previous log entry.
-%In order to support access to a log entry via its hash, all content
-%would also be published under\\
-%\centerline{\tt
-%  D('/ssb/sha256/<hashval>', content, signature)}
+Emulating SSB over NDN means emulating a push-based system over a pull-based one, and an identity-centric system over a name-based one. Both turn out to be problematic.
+
+Implementing push with the pure request-reply model of NDN comes down to two basic options[cite]: the producer could send an interest to the consumer, to signal that the consumer should itself issue an interest in the newly available data. This approach - aside from misusing the semantics of interest requests - incurs a high latency penalty.
+
+The other approach is regular polling: the consumer periodically signals interest for some data the producer may or may not have created yet. In its simplest form, this can be done by publishing data under a name that ends with a sequence number that is incremented with each produced piece of data. Under this model, the consumer can decide how many items into the "future" to poll for simultaneously. This whole process can be abstracted over with a consumer-side library[cite][cite].
+
+With the current design of NDN, polling is resource intensive. A natural extension would be the inclusion of long-lived or persistent interests[cite]. But even then, a pull implementation would be inefficient: polling ahead for multiple items effectively amounts to controling back-pressure through a sliding window, comparable to TCP. But unlike TCP, this window could only be manipulated by one item per (interest) packet. Introducing some form of sequence number arithmetic to increase efficiency would necessitate to drop the concept of purely opaque names.
+
+Implementing the pull aspects of SSB over NDN would therefore cost either time (interests triggering interests), space (polling), or it would require significant changes to NDN (long-lived interests + non-opaque names) that would effectively turn it into a name-based SSB.
+
+%SSB's smaller than 4KB log entries map perfectly well to NDN if one
+%abstracts away from the wire format: a SSB
+%log entry for \mbox{$\langle id:seqno\rangle$} could be named by\\
+%  \centerline{\tt D('/ssb/logs/<id>/<seqno>', content, signature)} \\
+%where {\tt content} includes the name of the previous log entry.
+%%In order to support access to a log entry via its hash, all content
+%%would also be published under\\
+%%\centerline{\tt
+%%  D('/ssb/sha256/<hashval>', content, signature)}
+%%
+%%\noindent
+%%This double-publishing is necessary because NDN's implicit name
+%%component mechanics requires a {\em full} name, hence cannot do a longest
+%%prefix match on {\tt
+%%  "/ssb/ImplicitSha256DigestComponent =<hashval>"}. Moreover, the digest
+%%algorithm of SSB may change in the future and diverge from NDN's, hence
+%%requires a name subtree of its own ({\tt sha256} in this case).
+%%
+%A SSB client wanting to replicate a log from scratch would issue
+%Interest packets starting at {\tt I('/ssb/logs/<id>/0')} and increase the
+%sequence number until no more log entries can be fetched.
 %
-%\noindent
-%This double-publishing is necessary because NDN's implicit name
-%component mechanics requires a {\em full} name, hence cannot do a longest
-%prefix match on {\tt
-%  "/ssb/ImplicitSha256DigestComponent =<hashval>"}. Moreover, the digest
-%algorithm of SSB may change in the future and diverge from NDN's, hence
-%requires a name subtree of its own ({\tt sha256} in this case).
+%The ease with which this mapping could be introduced is misleading, as
+%there are several problems with such an approach. First and foremost,
+%implementing SSB's push model leads to continuous polling at the level
+%of pull-oriented NDN. Second, there is no prefix aggregation possible
+%because of SSB's flat ID space.
 %
-A SSB client wanting to replicate a log from scratch would issue
-Interest packets starting at {\tt I('/ssb/logs/<id>/0')} and increase the
-sequence number until no more log entries can be fetched.
-
-The ease with which this mapping could be introduced is misleading, as
-there are several problems with such an approach. First and foremost,
-implementing SSB's push model leads to continuous polling at the level
-of pull-oriented NDN. Second, there is no prefix aggregation possible
-because of SSB's flat ID space.
-
-The latter concern could be addressed in two ways, both having
-undesirable consequences. The first would be to introduce a NDN
-routing strategy that mimics SSB's forwarding along the receiver's
-social graph. Such a modified NDN forwarder would have to either parse
-all logs or to receive the graph information from somewhere
-else. Additionaly, Interests would have to carry the ID of the
-receiver (otherwise the forwarder does not know which graph to use),
-which is contrarion to interest aggregation, which would have to be
-changed.  Such a special ``SSB routing strategy'' would have to be
-deployed globally, essentially converting NDN into a SSB core. We will
-come back to a SSB-aware NDN layer in the next subsection.
-
-A second approach would be to use NDN's LINK objects in order to redirect
-Interests towards the location of the storage provider for a given
-$\langle id\rangle$, using a NDN naming service~\cite{DBLP:conf/icccn/AfanasyevJYTXM017} and a set of
-permanent storage providers to which the SSB devices would
-have to upload new content.
-% The change in this case is on SSB's side,
-% whose community would have to accept a logically centralized name
-% service component.
-Even if there are only a small number of storage provider,
-the NDN naming service would have to
-handle a global database for the $\langle id\rangle$-to-storage
-mapping.
-%(as if all NDN  were mobile) or also here we would have to introduce SSB's social
-%graph for scaling reasons).
-
-%In fact, SSB's use case is a case of
-%producer mobility where it is questionable that NDN could handle a
-%world consisting of mobile terminals only.
-
-%SSB-over-NDN would either require changes to NDN or put tremendous
-%stress on either on the NDN routing system or a name service, also
-%potentially forcing SSB users to work with ``centrish'' content
-%repositories and mapping services.
-
-\subsection{SSB-aware NDN}
-
-Assuming that SSB's replication approach (limiting content propagation
-to a device's social graph works) leads to scalable solutions, NDN
-could be made SSB-aware. This would require that NDN inspects the logs
-in order to learn about the social graph. In fact, it would promote
-NDN forwarders to become SSB nodes that replicate SSB content (instead
-of a name server infrastructure and dedicated repo providers). A new,
-corresponding forwarding strategy doesn't require routing entries as
-it simply floods incoming interests that cannot be satisfied from the
-local replicas to all SSB+NDN neighbors along the social graph.
-
-However, using such a strategy would be a travesty as it turns NDN
-into a push network for interest packets (due to the polling, by every
-node, whether new content is available or not) -- only sporadic data
-packets would be returned during the replication process. An
-optimization would be to use long-lived interests, turning NDN into a
-pub/sub system. Finally we point out that some variant of NDN's SYNC
-protocols could be suitable to capture SSB's goal, namely to sync the
-replicas across (a part of) the network. Such a variant would be able
-to benefit from SSB's strict log extension rule. But looking at the
-way Sync is implemented in NDN, this comes back at a push-style
-communication where interests are used to poll neighbors about any
-state change. We think that bringing a SSB mindset into NDN would
-change NDN beyond recognition, especially flow-balance would be
-lost during this transition.
+%The latter concern could be addressed in two ways, both having
+%undesirable consequences. The first would be to introduce a NDN
+%routing strategy that mimics SSB's forwarding along the receiver's
+%social graph. Such a modified NDN forwarder would have to either parse
+%all logs or to receive the graph information from somewhere
+%else. Additionaly, Interests would have to carry the ID of the
+%receiver (otherwise the forwarder does not know which graph to use),
+%which is contrarion to interest aggregation, which would have to be
+%changed.  Such a special ``SSB routing strategy'' would have to be
+%deployed globally, essentially converting NDN into a SSB core. We will
+%come back to a SSB-aware NDN layer in the next subsection.
+%
+%A second approach would be to use NDN's LINK objects in order to redirect
+%Interests towards the location of the storage provider for a given
+%$\langle id\rangle$, using a NDN naming service~\cite{DBLP:conf/icccn/AfanasyevJYTXM017} and a set of
+%permanent storage providers to which the SSB devices would
+%have to upload new content.
+%% The change in this case is on SSB's side,
+%% whose community would have to accept a logically centralized name
+%% service component.
+%Even if there are only a small number of storage provider,
+%the NDN naming service would have to
+%handle a global database for the $\langle id\rangle$-to-storage
+%mapping.
+%%(as if all NDN  were mobile) or also here we would have to introduce SSB's social
+%%graph for scaling reasons).
+%
+%%In fact, SSB's use case is a case of
+%%producer mobility where it is questionable that NDN could handle a
+%%world consisting of mobile terminals only.
+%
+%%SSB-over-NDN would either require changes to NDN or put tremendous
+%%stress on either on the NDN routing system or a name service, also
+%%potentially forcing SSB users to work with ``centrish'' content
+%%repositories and mapping services.
 
 \subsection{NDN over SSB}
 \label{ssect:ndn-over-ssb}
 
-An interesting thought experiment is to reverse the layering,
-stress-testing SSB in this case. Is SSB universal enough so that one
-can ``emulate'' NDN over SSB (see the third subfigure of
-Fig.~\ref{fig:ssb-and-ndn})? SSB would have to implement three
+%An interesting thought experiment is to reverse the layering,
+%stress-testing SSB in this case. Is SSB universal enough so that one
+%can ``emulate'' NDN over SSB (see the third subfigure of
+%Fig.~\ref{fig:ssb-and-ndn})? 
+
+While the current design of NDN is inefficient for implementing SSB, implementing NDN over SSB would also be inefficient. SSB would have to implement three
 distinct NDN features: the hierarchical name space, the pull-model
 and NDN's trust system.
 
@@ -765,9 +818,9 @@ content from them. However, in SSB's worldview, a repo would have to
 follow all potential customers i.e., to learn about their IDs,
 otherwise these customers cannot express interest in some content
 (which could be delivered through log replication of transient SSB
-IDs, for example). When looking at NDN we realize that NDN has a
-social contract along the interest path: a NDN forwarder accepts any
-downstream node as a friend, accepts its interest packet (= pushed
+IDs, for example). When looking at NDN from the viewpoint of SSB,
+ we realize that NDN has a social contract along the interest path: 
+ a NDN forwarder accepts any downstream node as a friend, accepts its interest packet (= pushed
 replica of the request), and then relies on a similar contract with
 its upstream node. Following this insight, our NDN emulation would
 have to introduce ``NDN forwarding providers'' at SSB level. Once
@@ -777,57 +830,48 @@ authorities.
 
 While it doesn't seem strictly impossible to continue that emulation
 argument, it is already obvious from the above discussion that one
-would not benefit from SSB's social graph replication mindset. We try
-to explain this result in the following subsection.
+would not benefit from SSB's social graph replication mindset. 
 
+%We try to explain this result in the following subsection.
 
-\subsection{Name-Centric vs Identity-Centric}
+\subsection{Combining NDN and SSB}
 
-At first sight, the stark difference of PULL vs PUSH is the main
-differentiator between NDN and SSB. However, the above layering
-discussion shows that there is a second, equally strong discrepancy
-which we pin to the way IDs are handled.
+From the prior sections, it becomes clear that push-based streams are more general than single data items, and hierarchical names are more general than flat ones. We thus briefly sketch a system that combines the two in order to bring some of SSB's benefits to layer 3.
 
-NDN has no notion of receiver ID, by design, which has the benefit of
-easy Interest aggregation but also is the basis of the social contract
-with the forwarder (to accept interests from anybody). SSB, however,
-is deeply ID-centric: only by following (= declaring interest in) some
-ID, {\em all} its content will be pulled towards the interested
-party. Selective data replication, which requires a bidirectional
-Interest/Data protocol, only would work in SSB if both sides follow
-each other - hence the difficulty to implement NDN's global fetch
-mechanics over SSB. NDN, on the other hand, introduces repositories
-(somehow linked to routing prefixes) as quasi-IDs: NDN's service model
-is to interconnect (many) ID-less clients with (few) identified repos.
-As such, NDN has a centralization bias which obviously clashes with
-SSB's decentralization stance.
+The combination of SSB and NDN would bind hierarchical names of opaque components to streams, not data pieces. The identifier for a piece of data would be the pair of the stream name and its sequence number.
 
-One can also draw the following picture: NDN works with repo IDs
-(prefixes) on top if which we have IDs for content (= content names
-extending a repo ID). In NDN, IDs have no role for the receiver or in
-the replication process except that forwarding validates the origin of
-data items. On the other hand, these repo IDs must be globally routable
-through some unspecified routing protocol outside the NDN specs. SSB
-also has producer-side IDs, but it is mandatory that clients also have
-an ID because otherwise they could not publish their replication needs
-(towards SSB's routing logic).
+NDN's routing implementation with FIB, PITs, and content stores could be used for the stream names. Subscriptions to a stream would be implemented with long polling. Unlike regular NDN, the sequence-number based backpressure window can be efficiently manipulated, since the sequence numbers would not be opaque strings but first-class citizens of the routing protocol. This hybrid system could either be seen as a push-based system with backpressure or a pull-based system that can talk about the future.
 
-Finally, IDs have different weights in NDN and SSB when it comes to
-replicas and packet loss. NDN only validates that a data item's
-signature can be traced back (via publisher IDs) to some trust anchor,
-while ARQ (automatic retransmission request) must be used to recover
-from lost packets. In SSB, the whole log associated with an ID is
-validated (assert strict ordering and completeness), which factors out
-difficult tasks to the benefit of the applications (no retransmission
-logic, no need to SYNC).
+By separating data identifiers into two components, the combination gets the best of both world: the gains in routing simplicity and efficiency that come with hierarchical names, and the improved efficiency of back-pressured data streams that comes with totally ordered sequence numbers.
 
-As a conclusion, we were surprised that we could not find easy ways
-how NDN can be made suitable for implementing SSB, or be enhanced by
-SSB properties without turning NDN into SSB, and how it looks
-difficult to port NDN to SSB without deviating from SSB's
-decentralization agenda. Beside the push/pull theme, SSB's
-identity-centric approach seems to introduce a yet unseen element for
-ICN.
+While this combination comes short of some of SSB's goals, it demonstrates how SSB's push-based worldview could bring benefits to NDN and other ICN architectures.
+
+%\subsection{SSB-aware NDN}
+%
+%Assuming that SSB's replication approach (limiting content propagation
+%to a device's social graph works) leads to scalable solutions, NDN
+%could be made SSB-aware. This would require that NDN inspects the logs
+%in order to learn about the social graph. In fact, it would promote
+%NDN forwarders to become SSB nodes that replicate SSB content (instead
+%of a name server infrastructure and dedicated repo providers). A new,
+%corresponding forwarding strategy doesn't require routing entries as
+%it simply floods incoming interests that cannot be satisfied from the
+%local replicas to all SSB+NDN neighbors along the social graph.
+%
+%However, using such a strategy would be a travesty as it turns NDN
+%into a push network for interest packets (due to the polling, by every
+%node, whether new content is available or not) -- only sporadic data
+%packets would be returned during the replication process. An
+%optimization would be to use long-lived interests, turning NDN into a
+%pub/sub system. Finally we point out that some variant of NDN's SYNC
+%protocols could be suitable to capture SSB's goal, namely to sync the
+%replicas across (a part of) the network. Such a variant would be able
+%to benefit from SSB's strict log extension rule. But looking at the
+%way Sync is implemented in NDN, this comes back at a push-style
+%communication where interests are used to poll neighbors about any
+%state change. We think that bringing a SSB mindset into NDN would
+%change NDN beyond recognition, especially flow-balance would be
+%lost during this transition.
 
 
 % ----------------------------------------------------------------------
