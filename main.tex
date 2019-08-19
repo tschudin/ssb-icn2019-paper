@@ -187,7 +187,7 @@ data only flows where it is needed and provides flexibility in the actual data d
 %propagated at any forwarding step.
 {\bf Fourth}, it makes every peer a
 publisher by design. This property goes beyond the decentralized
-approach like DAT~\cite{datproject} or IPFS~\cite{benet2014ipfs} which assume that there
+approaches like DAT~\cite{datproject} or IPFS~\cite{benet2014ipfs} which assume that there
 exist replication servers but keep the separation between a data
 transport network and a server layer.
 % In SSB, bidirectional
@@ -290,11 +290,11 @@ We start out by giving an overview of the SSB protocol in Section \ref{sect:arch
 
 In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. Since anybody can generate a random keypair with very low probability of multiple peers generating the same keypair, no central authority is necessary for introducing users to the system. Conceptually, SSB is a network of identities that connect to each other (physical topology) and share mutual or unilateral interest in the other peer's data (social graph), as shown in Figure~\ref{fig:net-of-people}. A node running the SSB protocol is called a \textit{relay}.
 
-The {\em single-writer append-only logs} of SSB consist of  messages that include a {\em backlink} in the form of a cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blockchain is that each SSB user unilaterally maintains their own log and cryptographically signs all their (and only their) messages. Messages whose backlink points to a message in a different log (i.e. from a different author) are considered invalid and will not be processed by SSB peers.
+The {\em single-writer append-only logs} of SSB consist of entries (called \textit{messages}) that include a {\em backlink} in the form of a cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blockchain is that each SSB user maintains their own log and cryptographically signs all their (and only their) message. Message whose backlink points to a message in a different log (i.e. from a different author) are considered invalid and will be rejected by SSB relays.
 
-%These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB server checks that every message has exactly zero or one incoming backlinks. If it has more than one, the feed is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log can not be appended to anymore.
+These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB server checks that every message has exactly zero or one incoming backlinks. If it has more than one, the feed is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log can not be appended to anymore.
 
-Concretely, each log entry, which may not exceed 4 KB, contains the following pieces of data~\cite{ssb-spec-messages}:
+Concretely, each message, which may not exceed 4 KB, contains the following pieces of data~\cite{ssb-spec-messages}:
 
 \begin{itemize}
 
@@ -314,18 +314,18 @@ Concretely, each log entry, which may not exceed 4 KB, contains the following pi
 
 \end{itemize}
 
-The {\em content} is a JSON object that must contain a {\em type} key that serves as a hint for how the content should be interpreted. SSB enforces that the content is valid JSON by rejecting any malformed entry.
+The {\em content} is a JSON object that must contain a {\em type} key that serves as a hint for how the content should be interpreted. SSB enforces that the content is valid JSON by rejecting any malformed message.
 Instead of structured JSON data, the content can be a base64-encoded string of encrypted data, together with a tag that signifies which encryption algorithm was used.
 
-SSB defines a format for encoding specifically the public keys of identities and the hashes of messages and blobs (see below) as strings. This allows applications to scan the content of log entries from other peers for such references, e.g. in order to create database indices (see Sect.~\ref{ssect:dapps}).
+SSB defines a format for encoding specifically the public keys of identities and the hashes of messages and blobs (see below) as strings. This allows applications to scan the content of log messages from other peers for such references, e.g. in order to create database indices (see Sect.~\ref{ssect:dapps}).
 
 % The precise, byte-for-byte definition of the json-based message encoding is given in \cite{ssb-spec-messages}.
 
 \subsection*{Replication}
 
-The principal function of SSB relays is to connect to other relays and exchange log {\em updates}. To do so, they maintain a point-to-point encrypted~\cite{tarr2015secrethandshake} overlay network over which they run a gossip protocol. When two relays start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a peer receives a lower sequence number for a feed than it sent, it transmits the log messages that the peer is lacking. If at a later point a new message of the feed becomes available to a relay, it is automatically \textit{pushed} to the connected peers. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, which itself is maintained via the plumtree~\cite{leitao2007epidemic} protocol. In classic peer-to-peer fashion, clients (leaf nodes) are no different than relays except that they usually include some graphical user interface and perform application logic.
+The principal function of SSB relays is to connect to other relays and exchange log {\em updates}. To do so, they maintain a point-to-point encrypted~\cite{tarr2015secrethandshake} overlay network over which they run a gossip protocol. When two relays start gossiping, they exchange the current sequence numbers of all logs they are interested in. If a relay receives a lower sequence number for a feed than it sent, it transmits the log messages that the ther relay is lacking. If at a later point a new message of the feed becomes available to a relay, it is automatically \textit{pushed} to the connected relays. As an optimization, this {\em eager} gossip is only performed over the edges of a spanning tree, which itself is maintained via the plumtree~\cite{leitao2007epidemic} protocol. In classic peer-to-peer fashion, clients (leaf nodes) are no different than relays except that they usually include some graphical user interface and perform application logic.
 
-In addition to this primary replication mechanism, SSB provides two other ways of exchanging information. {\em Blobs} are content-addressed pieces of free-form data, typically images or other documents larger than the 4KB limit, that are referenced from log entries but are not part of any log. They are not widely disseminated automatically, but rather fetched on demand via a simple request-flooding protocol. {\em Out-of-order messages} are a similar mechanism to address and fetch log entries on demand via their hashes.
+In addition to this primary replication mechanism, SSB provides two other ways of exchanging information. {\em Blobs} are content-addressed pieces of free-form data, typically images or other documents larger than the 4KB limit, that are referenced from log messages but are not part of any log. They are not widely disseminated automatically, but rather fetched on demand via a simple request-flooding protocol. {\em Out-of-order messages} are a similar mechanism to address and fetch log messages on demand via their hashes.
 
 \subsection*{SSB Relays as an Application Platform}
 
@@ -366,7 +366,7 @@ The replication model of SSB enables many collaborative applications to be imple
 
 `{\small\tt about}' is SSB's user database i.e., an application that
 associates cryptographic IDs with (typically) human-readable
-attributes. A single log entry format has been defined to this end:
+attributes. A single message format has been defined to this end:
 {\small\begin{verbatim}
 'content': {
   'type'  : 'about',
@@ -376,12 +376,12 @@ attributes. A single log entry format has been defined to this end:
 \end{verbatim}}
 
 \noindent
-The {\small\tt about} app scans all logs for all entries of type {\small\tt
+The {\small\tt about} app scans all logs for all message of type {\small\tt
   `about'} and constructs a database as shown in
 Figure~\ref{fig:about}, retaining the most recent attribute assignment
 found.  To each target user ID we associate a directory where
 key/value pairs are collected on a per author basis (which is extracted
-from the log entry's envelope).
+from the message's envelope).
 
 Currently the {\small\tt name}, {\small\tt description} and {\small\tt
   image} attributes are understood by most SSB user interfaces and are
@@ -397,9 +397,9 @@ attributes are self-chosen, and otherwise given.
 
 \noindent
 In terms of CRUD\footnote{Create, Read, Update, Delete} actions, creation happens once a new SSB peer adds
-its own {\small\tt about} entry to its log; reading the user database
+its own {\small\tt about} message to its log; reading the user database
 is performed on the above data structure; updates are expressed by
-adding an {\small\tt about} entry --regardless whether it relates to
+adding an {\small\tt about} message --regardless whether it relates to
 the peer itself or to another peer-- to one's own log and all peers
 updating their extracted database; deleting a user entry is not
 possible, at least not directly (one would have to block that user ID
@@ -492,7 +492,7 @@ Typically a map-reduce strategy is used where the map phase filters
 the logs and the reduce actions computes the latest application state.
 
 In the user directory application (Sect.~\ref{ssect:about}), the filtering is
-done by selecting only {\tt about} entries for a specific target ID
+done by selecting only {\tt about} messages for a specific target ID
 and the reduce action consists in accumulating the latest key-value
 pairs such that a more recent key-value pair replaces an older one if
 it was signed by the same author\_id. The size of the replicated logs,
@@ -515,8 +515,8 @@ this case is a chat in form of sequence of post messages: if some peer was added
 the set of followed peers, its log gets incrementally replicated, and
 so are the posts of this peer. For each incoming new post, which may
 have been written very long ago, one has to insert it at the right
-place. This problem is shown in Figure~\ref{fig:tangle} where a log
-entry has not yet been replicated to a client and, once it arrives,
+place. This problem is shown in Figure~\ref{fig:tangle} where a message
+has not yet been replicated to a client and, once it arrives,
 has to be properly inserted into the application-level data structure.
 
 \begin{figure}[htb]
@@ -544,14 +544,15 @@ against a broad range of adversarial data found in the logs.
 \label{Section:Tangle}
 
 SSB's basic log replication service synchronizes peers in a consistent
-way: due to the hash chaining, events (represented by log entries)
+way: due to the hash chaining, events (represented by messages)
 will be delivered in the order they happened and replica content will
 be consistent. This does not instantly lead to consistent shared data
 structures, though, if the corresponding events are spread over
 multiple logs. Instead, the natural guarantee is that of {\em partial eventual
 consistency} where all peers will see the same reduced application
 state {\em if they share the same log set} after sufficient replication
-progress. Because of the eager, push-based forwarding of log entries, consistency can be reached quickly, even if there is no end-to-end connectivity.
+progress. Because of the eager, push-based forwarding of messages, consistency
+can be reached quickly, even if there is no end-to-end connectivity.
 
 Eventual consistency is the hallmark of Conflict-free Replicated Data
 Types (CRDTs, see~\cite{shapiro2011conflict}) which are directly applicable to the SSB
@@ -799,8 +800,8 @@ While the current design of NDN is inefficient for implementing SSB, implementin
 distinct NDN features: the hierarchical name space, the pull-model
 and NDN's trust system.
 
-Again assuming rough equivalence of NDN data packets and SSB log
-entries, i.e. a triple $\langle name,content,signature\rangle$, the
+Again assuming rough equivalence of NDN data packets and SSB messages,
+i.e. a triple $\langle name,content,signature\rangle$, the
 pull-model part is easy to answer: either some item is already in one
 of the eagerly replicated local logs, or it is not available yet
 (because SSB is push-based).
@@ -884,7 +885,7 @@ for example {\em secure logging}~\cite{schneier1998cryptographic} and {\em secur
 relative time-stamping}~\cite{haber1990time}. The major innovation of
 SSB is to use these techniques for disseminating data through a gossip
 protocol in a network of untrusted peers, effectively implementing a
-push-based information-centric network. SSB's log entries, named by $\langle id:seqno\rangle$, are a special case of DONA's naming schema~\cite{Koponen:2007:DNA:1282380.1282402}, sequence numbers can be regarded as totally ordered labels.
+push-based information-centric network. SSB's message, named by $\langle id:seqno\rangle$, are a special case of DONA's naming schema~\cite{Koponen:2007:DNA:1282380.1282402}, sequence numbers can be regarded as totally ordered labels.
 
 SSB's push-based content dissemination approach is also
 underlying middle-ware systems like
@@ -941,7 +942,7 @@ An interesting problem in this context is how peers would indicate the subsets o
 
 SSB relies on multiple cryptographic primitives (signatures and hashes for the log format, encryption for the replication protocol): best practice mandates that cryptographic agility is supported~\cite{nelson2011crypto}. All hashes and signatures in the logs include an indicator of the cryptographic primitive that has been used. At least in theory this means that the SSB protocol can introduce the use of new primitives as old ones become broken.
 
-An open problem is how old log entries can be ``saved'' once their primitives become insecure. The naive approach of republishing old messages with a new key changes the hashes of all those messages, thus breaking inter-message references.
+An open problem is how old message can be ``saved'' once their primitives become insecure. The naive approach of republishing old messages with a new key changes the hashes of all those messages, thus breaking inter-message references.
 % Alternate approaches could be based on publishing new messages that assert facts about older messages, or determining the trustworthyness of old messages based on how they are being referenced.
 A similar discussion (and proposed solution) for NDN can be found in~\cite{DeLorean}.
 %
@@ -1084,7 +1085,7 @@ By {\em leveraging} existing trust behind social interactions, instead of trying
 
 The freedom of applications to interpret data in whatever way they see fit increases the agency of users and application writers, to choose how to leverage the data they produce and for what purposes. SSB supports plurality also as a deliberate strategy to drive evolution. This also fosters the sharing of data between applications. For example, the `{\small\tt about}' information (Section~\ref{ssect:about}) can be reused by all programs, freeing implementors from duplicating work and creating a coherent user experience across apps.
 
-As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features: new uses can evolve based on the immediate needs of participants and then spread if the needs are more widely shared. Applications can simply start producing new kinds of log entries, and interoperability works out with all users who share the same interpretation of those messages.  This results in an organic evolution of features, without ``the system'' ever shutting down.
+As another consequence of the subjective interpretation of data, there is no need for central coordination to introduce or evolve features: new uses can evolve based on the immediate needs of participants and then spread if the needs are more widely shared. Applications can simply start producing new kinds of messages, and interoperability works out with all users who share the same interpretation of those messages.  This results in an organic evolution of features, without ``the system'' ever shutting down.
 
 % Like any uncoordinated evolutionary process, this may sometimes lead to dead-ends or less apparent conceptual integrity, but the evolution is open ended, can explore multiple alternatives in parallel, and lower the requirements for governance. Perhaps the value of that approach can best be assessed by the continuous and incremental improvement of SSB applications that has resulted in a thriving ecosystem that is used daily by hundred of users today, and evolves similar to the way the Internet has grown over the last decades.
 
