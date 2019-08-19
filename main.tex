@@ -235,7 +235,7 @@ and their integrity does not rely on an external trust anchor nor a
 central naming authority or other name coordination and allocation
 mechanisms.
 
-In contrast, NDN embodies quite different design choices. First, the basic elements of networking are \textit{single pieces of data}, identified by hierarchical names similar to paths in a filesystem. Second, data is accessed via a \textit{pull} model: a consumer issues an \textit{interest} in a name, and the network delivers the corresponding data. Third, many NDN schemes rely on a hierarchical trust model to issue certificates that can in turn be used to sign individual pieces of data.\footnote{To be fair, there has already been some proposal, not yet peer-reviewd, to leverage a web of trust model in a decentralized chat application built on top of NDN~\cite{zhu2012chronos}}
+In contrast, NDN embodies quite different design choices. First, the basic elements of networking are \textit{single pieces of data}, identified by hierarchical names similar to paths in a filesystem. Second, data is accessed via a \textit{pull} model: a consumer issues an \textit{interest} in a name, and the network delivers the corresponding data. Third, many NDN schemes rely on a hierarchical trust model to issue certificates that can in turn be used to sign individual pieces of data.\footnote{To be fair, there has already been some proposal, not yet peer-reviewed, to leverage a web of trust model in a decentralized chat application built on top of NDN~\cite{zhu2012chronos}}
 
 %%A core contribution of this paper is a direct comparison of SSB with
 %%\textit{named data networking} (NDN). Our analysis reveals strong incompatibilities in at least two
@@ -292,7 +292,7 @@ In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. 
 
 The {\em single-writer append-only logs} of SSB consist of entries (called \textit{messages}) that include a {\em backlink} in the form of a cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature from a regular blockchain is that each SSB user maintains their own log and cryptographically signs all their (and only their) message. Message whose backlink points to a message in a different log (i.e. by a different author) are considered invalid and will be rejected by SSB relays.
 
-These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB server checks that every message has exactly zero or one incoming backlinks. If it has more than one, the log is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log can not be appended to anymore.
+These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB relay checks that every message has exactly zero or one incoming backlinks. If it has more than one, the log is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log can not be appended to anymore.
 
 Concretely, each message, which may not exceed 4 KB, contains the following pieces of data~\cite{ssb-spec-messages}:
 
@@ -317,7 +317,7 @@ Concretely, each message, which may not exceed 4 KB, contains the following piec
 The {\em content} is a JSON object that must contain a {\em type} key that serves as a hint for how the content should be interpreted. SSB enforces that the content is valid JSON by rejecting any malformed message.
 Instead of structured JSON data, the content can be a base64-encoded string of encrypted data, together with a tag that signifies which encryption algorithm was used.
 
-SSB defines a format for encoding specifically the public keys of identities and the hashes of messages and blobs (see below) as strings. This allows applications to scan the content of log messages from other peers for such references, e.g. in order to create database indices (see Sect.~\ref{ssect:dapps}).
+SSB defines a format for encoding specifically the public keys of identities and the hashes of messages and blobs (see below) as strings. This allows applications to scan the content of log messages from other authors for such references, e.g. in order to create database indices (see Sect.~\ref{ssect:dapps}).
 
 % The precise, byte-for-byte definition of the json-based message encoding is given in \cite{ssb-spec-messages}.
 
@@ -329,14 +329,14 @@ In addition to this primary replication mechanism, SSB provides two other ways o
 
 \subsection*{SSB Relays as an Application Platform}
 
-Beyond replicating logs and checking the validity of update messages, an SSB relay offers an API to its peers. Peers can host arbitrary programs that issue RPCs to the relay over an IPC mechanism. The exposed functionality includes appending to the peer's log (if you know its private key), reading from logs, requesting which logs a relay should replicate, and fetching blobs and out-of-order messages.
+Beyond replicating logs and checking the validity of update messages, an SSB relay offers an API to its peers. Peers can host arbitrary programs that issue RPCs to the relay over an IPC mechanism. The exposed functionality includes appending to a log (if you know its private key), reading from logs, requesting which logs a relay should replicate, and fetching blobs and out-of-order messages.
 % SSB thus becomes a platform for building applications, encapsulating the complexity of data replication.
 
-The reference implementation of the SSB relay~\cite{ssb-server}, written in JavaScript, also includes a mechanism for loading {\em plugins} into the relay to extend its functionality. There are a few default plugins: conceptually these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin~\cite{ssb-friends} scans the relay's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the relay to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph.
+The reference implementation of the SSB relay~\cite{ssb-server}, written in JavaScript, also includes a mechanism for loading {\em plugins} into the relay to extend its functionality. There are a few default plugins: conceptually these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin~\cite{ssb-friends} scans the relay's log for specific messages that indicate which other identities the author {\em follows}. The plugin then instructs the relay to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph.
 
-Beyond ``befriending'' other users through {\tt follow} messages (i.e. messages of type {\tt follow}), a SSB user can control the shape of its social graph via special {\tt block} messages which limit the transitive log replication. Both the {\tt follow} as well as {\tt block} messages are overheard by relays, through scanning all received log updates, and inform them about where updates should be delivered (or not). Decisions about whom to replicate can be --and in the current system is-- guided by the content of the very data that is replicated. By storing the relevant information inside the author's log (as opposed to a local or central database), other peers can use this informtion to guide their decisions.
+Beyond ``befriending'' other authors through {\tt follow} messages (i.e. messages of type {\tt follow}), a SSB user can control the shape of its social graph via special {\tt block} messages which limit the transitive log replication. Both the {\tt follow} as well as {\tt block} messages are overheard by relays, through scanning all received log updates, and inform them about where updates should be delivered (or not). Decisions about whom to replicate can be --and in the current system is-- guided by the content of the very data that is replicated. By storing the relevant information inside the author's log (as opposed to a local or central database), other peers can use this informtion to guide their decisions.
 
-The overlay network also makes use of logs to store configuration information, in this case the SSB\_ID-to-IP\_address mapping: operators publish the static ip addresses of highly-available relays (called {\em pubs}) to their log. When a SSB leaf node needs to connect to the overlay, the responsible plugin can scan any locally available log replica for this information.
+The overlay network also makes use of logs to store configuration information, in this case the SSB\_ID-to-IP\_address mapping: operators publish the static ip addresses of highly-available relays (called {\em pubs}) to their log. When a SSB relay needs to connect to the overlay, the responsible plugin can scan any locally available log replica for this information.
 
 \subsection*{SSB's Layered Architecture}
 
@@ -396,11 +396,11 @@ attributes are self-chosen, and otherwise given.
 \end{figure}
 
 \noindent
-In terms of CRUD\footnote{Create, Read, Update, Delete} actions, creation happens once a new SSB peer adds
+In terms of CRUD\footnote{Create, Read, Update, Delete} actions, creation happens once a new SSB identity adds
 its own {\small\tt about} message to its log; reading the user database
 is performed on the above data structure; updates are expressed by
 adding an {\small\tt about} message --regardless whether it relates to
-the peer itself or to another peer-- to one's own log and all peers
+the author itself or to another identity-- to one's own log and all peers
 updating their extracted database; deleting a user entry is not
 possible, at least not directly (one would have to block that user ID
 as well as all IDs which wrote an update for that user).
@@ -511,9 +511,9 @@ the counter corresponding to the referenced message is incremented.
 
 Other applications, however, may need a {\em full} re-evalution of the
 reduce function each time the underlying index changes. An example for
-this case is a chat in form of sequence of post messages: if some peer was added to
-the set of followed peers, its log gets incrementally replicated, and
-so are the posts of this peer. For each incoming new post, which may
+this case is a chat in form of sequence of post messages: if some identity is added to
+the set of followed identities, its log is incrementally replicated, and
+so are the posts of this identity. For each incoming new post, which may
 have been written very long ago, one has to insert it at the right
 place. This problem is shown in Figure~\ref{fig:tangle} where a message
 has not yet been replicated to a client and, once it arrives,
@@ -560,13 +560,13 @@ setting as they only assume a reliable and (sometimes) in-order
 delivery of update messages. Potentially, CRDTs permit to implement
 global data structures featuring eventual consistency without
 coordination effort (thus are fully scalable). The caveat here is that
-SSB peers do not necessarily see all involved peers due to their
+SSB peers do not necessarily see all involved logs due to their
 position in the social graph which controls replication wherefore
 consistency is always modulo that fact. For example, like counts will
 be eventually consistent with respect to the same set of followed
-peers but not globally, at least if they are directly counted. Other
+authors but not globally, at least if they are directly counted. Other
 applications relying on reduction via set union may learn from state
-that stems from beyond the circle of followed peer.
+that stems from beyond the circle of followed authors.
 
 More research is needed to understand the constraints brought by the combination of
 coordination-less interaction with partial log replication, but SSB's
@@ -1033,7 +1033,7 @@ The cocktail of pseudonymity, non-refutability and immutability can be a serious
 
 \subsection{Onboarding}
 
-Data can only be propagated to relays that specifically ask for it. When a new node joins the system, it can only participate effectively once someone subscribes to its log. The SSB community approaches this ``onboarding'' with multiple techniques. Pubs can issue \textit{invite codes} out-of-band. When a user sends such a code to the pub, the pub automatically follows the user, requesting their messages in the process. As an additional onboarding mechanism, the reference server uses lan multicast to discover nearby peers. This allows local onboarding where an established user can follow a new user in the same lan.
+Data can only be propagated to relays that specifically ask for it. When a new identity joins the system, it can only participate effectively once someone subscribes to its log. The SSB community approaches this ``onboarding'' with multiple techniques. Pubs can issue \textit{invite codes} out-of-band. When a user sends such a code to the pub, the pub automatically follows the user, requesting their messages in the process. As an additional onboarding mechanism, the reference relay implementation uses lan multicast to discover nearby peers. This allows local onboarding where an established user can follow a new user in the same lan.
 
 \subsection{Coordination}
 
@@ -1075,7 +1075,7 @@ Since SSB applications only interact with the local replicas of logs, complete o
 
 \subsection{Efficiency}
 
-Due to the ``subjective reader'' approach, all ssb relays can operate concurrently. There is no need for synchronization across nodes, and the overhead they might incur. Applications can fully embrace this, for example by using CRDTs. The monotonically growing logs are well-suited for implementing CRDTs and similar techniques.
+Due to the ``subjective reader'' approach, all ssb relays can operate concurrently. There is no need for synchronization across nodes, and the overhead this might incur. Applications can fully embrace this, for example by using CRDTs. The monotonically growing logs are well-suited for implementing CRDTs and similar techniques.
 
 By {\em leveraging} existing trust behind social interactions, instead of trying to eliminate it, e.g. in blockchain systems which establish consensus over trustless nodes, proof-of-work and other computationally-intensive techniques can be replaced by \textit{social signals} encoded as events in a log. The delay tolerance allows routing layers that can optimize for different tradeoffs, for example by minimizing the bandwidth required to disseminate updates rather than minimizing latency. Pushed further, the same approach could lead to infrastructure that is quite efficient in its usage of memory, bandwidth, and energy, making the overall required infrastructure sustainable with less resources than other approaches requiring always available, high-throughput, routing infrastructure. Leveraging existing social trust between participants can therefore provide clear technical benefits.
 
