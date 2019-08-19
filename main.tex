@@ -39,14 +39,15 @@
 % TODO: clean up terminology (feed/log/author/identity/id, server/relay/device/node/peer/machine, message/data/entry, ``social graph'', subjectivity (subjective reader) as opposed to plurality (how to interpret messages))
 
 \begin{abstract}
-  Secure Scuttlebutt (SSB) is a novel peer-to-peer information-centric
+  Secure Scuttlebutt (SSB) is a novel peer-to-peer
   event-sharing protocol and architecture for social apps. In this
   paper we describe SSB's features, its operations as well as the
   rationale behind the design. We also provide a comparison with Named
   Data Networking (NDN), an existing information-centric networking
   architecture, to motivate a larger exploration of the design space
-  for information-centric networking primitives. We finally discuss
-  SSB's limitations and evolution opportunities.
+  for information-centric networking primitives by formulating an
+  identity-centric approach. We finally discuss SSB's limitations
+  and evolution opportunities.
 
 %  At the transport level, SSB is a replication protocol for
 %  append-only logs.  applications communicate indirectly by writing to
@@ -92,7 +93,7 @@ and running in pure peer-to-peer mode.
 
 \subsection*{Selective Complete Log Replication}
 
-SSB relies on the core insight that each  participant is only interested in a \textit{subset} of the global data pool, thus it is feasible to locally store all the data a participant is interested in. To partition the data pool, all data is associated with the \textit{identity} that produced it. Participants select their slice of the data pool by specifying the set of identities whose data they care about. This creates a ``social graph'' along whose edges data flows (Figure~\ref{fig:net-of-people}).
+SSB relies on the core insight that each  participant is only interested in a \textit{subset} of the global data pool, thus it is feasible to locally store all the data a participant is interested in. To partition the data pool, all data is associated with the \textit{identity} that produced it. Participants select their slice of the data pool by specifying the set of identities whose data they care about. This creates a ``social graph'' along whose edges data flows (Figure~\ref{fig:net-of-people}). Even as the overall system scales, the amount of data any single peer is interested in and thus needs to handle stays roughly the same.
 
 Each participant can publish data to their single-writer, append-only log. This choice of data structure allows efficient replication and verification of the integrity of received data. Replicating these larger slices of the data pool comes with an unusual set of tradeoffs, discussed throughout the paper. As it turns out, replicated logs form a solid foundation for implementing many classes of applications.
 
@@ -177,13 +178,13 @@ maintaining a social graph that informs routing creates a very narrow
 filter: it implements a receiver-driven approach where
 data only flows where it is needed and provides flexibility in the actual data dissemination strategy.
 %without imposing any
-%fine-grained request/reply protocol. 
+%fine-grained request/reply protocol.
 %%Instead, any dissemination
 %technology is adequate, including broadcast and push mode, because
 %network elements can verify data validity (due to the logs' signed
 %entries) and monotonicity of the updates without additional key and
 %certificate material, guaranteeing that only valid traffic is
-%propagated at any forwarding step. 
+%propagated at any forwarding step.
 {\bf Fourth}, it makes every peer a
 publisher by design. This property goes beyond the decentralized
 approach like DAT~\cite{datproject} or IPFS~\cite{benet2014ipfs} which assume that there
@@ -234,7 +235,7 @@ and their integrity does not rely on an external trust anchor nor a
 central naming authority or other name coordination and allocation
 mechanisms.
 
-In contrast, NDN embodies quite different design choices. First, the basic elements of networking are \textit{single pieces of data}, identified by hierarchical names similar to paths in a filesystem. Second, data is accessed via a \textit{pull} model: a consumer issues an \textit{interest} in a name, and the network delivers the corresponding data. Third, many NDN schemes rely on a hierarchical trust model to issue certificates that can in turn be used to sign individual pieces of data.\footnote{To be fair, there has already been some proposal, not yet peer-reviewd, to leverage a web of trust model in a decentralized chat application built on top of NDN~\cite{zhu2012chronos}} 
+In contrast, NDN embodies quite different design choices. First, the basic elements of networking are \textit{single pieces of data}, identified by hierarchical names similar to paths in a filesystem. Second, data is accessed via a \textit{pull} model: a consumer issues an \textit{interest} in a name, and the network delivers the corresponding data. Third, many NDN schemes rely on a hierarchical trust model to issue certificates that can in turn be used to sign individual pieces of data.\footnote{To be fair, there has already been some proposal, not yet peer-reviewd, to leverage a web of trust model in a decentralized chat application built on top of NDN~\cite{zhu2012chronos}}
 
 %%A core contribution of this paper is a direct comparison of SSB with
 %%\textit{named data networking} (NDN). Our analysis reveals strong incompatibilities in at least two
@@ -260,7 +261,7 @@ In contrast, NDN embodies quite different design choices. First, the basic eleme
 %claims of NDN rest, and consequently, these repositories --- or, to be
 %more precise, their global prefixes and all names attached to them ---
 %are points of centralization. SSB, on the other hand, has no global
-%constructs, true to is decentralized point of view, and can be called
+%constructs, true to its decentralized point of view, and can be called
 %{\em identity-centric} in order to contrast it from {\em name-centric}
 %NDN.
 
@@ -328,12 +329,12 @@ In addition to this primary replication mechanism, SSB provides two other ways o
 
 \subsection*{SSB Relays as an Application Platform}
 
-Beyond replicating logs and checking the validity of update messages, an SSB relay offers an API to its peers. Peers can host arbitrary programs that issue RPCs to the relay over an IPC mechanism. The exposed functionality includes appending to the peer's log, reading from logs, specifying which logs a relay should replicate, and fetching blobs and out-of-order messages.
+Beyond replicating logs and checking the validity of update messages, an SSB relay offers an API to its peers. Peers can host arbitrary programs that issue RPCs to the relay over an IPC mechanism. The exposed functionality includes appending to the peer's log (if you know its private key), reading from logs, requesting which logs a relay should replicate, and fetching blobs and out-of-order messages.
 % SSB thus becomes a platform for building applications, encapsulating the complexity of data replication.
 
 The reference implementation of the SSB relay~\cite{ssb-server}, written in JavaScript, also includes a mechanism for loading {\em plugins} into the relay to extend its functionality. There are a few default plugins: conceptually these can be thought of as client programs that are always running. Of particular importance are those that guide the replication process. The {\em friends} plugin~\cite{ssb-friends} scans the relay's log for specific messages that indicate which other authors the identity {\em follows}. The plugin then instructs the relay to fetch and replicate these logs. These other logs might of course also contain some of these messages. The friends plugin transitively replicates these friends-of-a-friend logs as well, up to a configurable maximum distance in the friends graph.
 
-Beyond ``befriending'' other users through {\tt follow} messages, a SSB user can control the shape of its social graph via special {\tt block} messages which limit the transitive log replication. Both the {\tt follow} as well as {\tt block} messages are overheard by relays, through scanning all received log updates, and inform them about where updates should be delivered (or not). Decisions about whom to replicate can be --and in the current system is-- guided by the content of the very data that is replicated. By storing the relevant information inside the author's log (as opposed to a local or central database), other peers can use this informtion to guide their decisions.
+Beyond ``befriending'' other users through {\tt follow} messages (i.e. messages of type {\tt follow}), a SSB user can control the shape of its social graph via special {\tt block} messages which limit the transitive log replication. Both the {\tt follow} as well as {\tt block} messages are overheard by relays, through scanning all received log updates, and inform them about where updates should be delivered (or not). Decisions about whom to replicate can be --and in the current system is-- guided by the content of the very data that is replicated. By storing the relevant information inside the author's log (as opposed to a local or central database), other peers can use this informtion to guide their decisions.
 
 The overlay network also makes use of logs to store configuration information, in this case the SSB\_ID-to-IP\_address mapping: operators publish the static ip addresses of highly-available relays (called {\em pubs}) to their log. When a SSB leaf node needs to connect to the overlay, the responsible plugin can scan any locally available log replica for this information.
 
@@ -395,7 +396,7 @@ attributes are self-chosen, and otherwise given.
 \end{figure}
 
 \noindent
-In terms of CRUD actions, creation happens once a new SSB peer adds
+In terms of CRUD\footnote{Create, Read, Update, Delete} actions, creation happens once a new SSB peer adds
 its own {\small\tt about} entry to its log; reading the user database
 is performed on the above data structure; updates are expressed by
 adding an {\small\tt about} entry --regardless whether it relates to
@@ -547,10 +548,10 @@ way: due to the hash chaining, events (represented by log entries)
 will be delivered in the order they happened and replica content will
 be consistent. This does not instantly lead to consistent shared data
 structures, though, if the corresponding events are spread over
-multiple logs. Instead, the natural guarantee is that of {\em eventual
-  consistency} where all peers will see the same reduced application
-state (if they share the same log set) after sufficient replication
-progress.
+multiple logs. Instead, the natural guarantee is that of {\em partial eventual
+consistency} where all peers will see the same reduced application
+state {\em if they share the same log set} after sufficient replication
+progress. Because of the eager, push-based forwarding of log entries, consistency can be reached quickly, even if there is no end-to-end connectivity.
 
 Eventual consistency is the hallmark of Conflict-free Replicated Data
 Types (CRDTs, see~\cite{shapiro2011conflict}) which are directly applicable to the SSB
@@ -634,7 +635,7 @@ deleted.
 
 \subsection{Comparison with SSB}
 
-Similar to NDN, SSB organizes distribution around content produced instead of the machines that are interacting. In contrast to NDN, the design aims at \textit{individual users as publishers} instead of larger organizations with the following technical consequences. SSB addresses a \textit{stream of data} tied to a particular identity instead of individual data items. SSB \textit{eagerly broadcasts} content as soon as possible (\textit{push-model}), leveraging the abundant storage available in peer's devices for replication. The replicas are determined based on social interests between \textit{peers}, achieving a similar aim as the \texttt{Interest} packet but once for an entire \textit{stream} of data and with persistence by default, rather than for each individual items with temporary caching. SSB also avoids the use of certificate authorities to enable anyone to become a publisher, instead relying on self-generated \textit{cryptographic keys} and \textit{trust} between peers established over repeated social interactions to establish credibility in a particular identity.  
+Similar to NDN, SSB organizes distribution around content produced instead of the machines that are interacting. In contrast to NDN, the design aims at \textit{individual users as publishers} instead of larger organizations with the following technical consequences. SSB addresses a \textit{stream of data} tied to a particular identity instead of individual data items. SSB \textit{eagerly broadcasts} content as soon as possible (\textit{push-model}), leveraging the abundant storage available in peer's devices for replication. The replicas are determined based on social interests between \textit{peers}, achieving a similar aim as the \texttt{Interest} packet but once for an entire \textit{stream} of data and with persistence by default, rather than for each individual items with temporary caching. SSB also avoids the use of certificate authorities to enable anyone to become a publisher, instead relying on self-generated \textit{cryptographic keys} and \textit{trust} between peers established over repeated social interactions to establish credibility in a particular identity.
 
 The different application context of NDN and SSB has an impact on ID management. In NDN, users (content consumers) are anonymous and their interest in the same content can be aggregated if it comes from shared routes. In SSB however, recipients also have an ID with an associated log in which they declare their interest in another ID. Said differently, NDN works with repo IDs
 (prefixes) on top of which we have IDs for content (= content names
@@ -792,7 +793,7 @@ Implementing the pull aspects of SSB over NDN would therefore cost either time (
 %An interesting thought experiment is to reverse the layering,
 %stress-testing SSB in this case. Is SSB universal enough so that one
 %can ``emulate'' NDN over SSB (see the third subfigure of
-%Fig.~\ref{fig:ssb-and-ndn})? 
+%Fig.~\ref{fig:ssb-and-ndn})?
 
 While the current design of NDN is inefficient for implementing SSB, implementing NDN over SSB would also be inefficient. SSB would have to implement three
 distinct NDN features: the hierarchical name space, the pull-model
@@ -819,7 +820,7 @@ follow all potential customers i.e., to learn about their IDs,
 otherwise these customers cannot express interest in some content
 (which could be delivered through log replication of transient SSB
 IDs, for example). When looking at NDN from the viewpoint of SSB,
- we realize that NDN has a social contract along the interest path: 
+ we realize that NDN has a social contract along the interest path:
  a NDN forwarder accepts any downstream node as a friend, accepts its interest packet (= pushed
 replica of the request), and then relies on a similar contract with
 its upstream node. Following this insight, our NDN emulation would
@@ -830,7 +831,7 @@ authorities.
 
 While it doesn't seem strictly impossible to continue that emulation
 argument, it is already obvious from the above discussion that one
-would not benefit from SSB's social graph replication mindset. 
+would not benefit from SSB's social graph replication mindset.
 
 %We try to explain this result in the following subsection.
 
@@ -911,7 +912,7 @@ interact directly with the secured single-author logs.
 
 % ----------------------------------------------------------------------
 
-\section{SSB's ``Work in Progress''}
+\section{SSB's Future Work}
 \label{sec:wip}
 
 So far we have mostly restricted our presentation to those features that are implemented today as part of SSB. In this section we will describe further extensions, namely a potential revision of SSB's log format and the operational challenges for scaling SSB beyond its user base of slightly more than ten thousand users.
@@ -971,15 +972,15 @@ A similar discussion (and proposed solution) for NDN can be found in~\cite{DeLor
 
 %Beyond protocol-level evolution, there are a couple of higher-level issues that often arise when designing applications on top of SSB. This section gives an overview over the most common ones and sketches potential approaches.
 
-%\subsection{Multi-Device Support}
-%
-%If two different devices used the same SSB identity to publish messages concurrently, this would result in a forked feed with the consequence that peer relays would stop propagating at least one, if not both log extensions. It is thus recommended to create a distinct keypair per device. But this leads to bad user experience, such as having to follow or block identities on all device.
-%
-%This could be mitigated by developing schemes that allow sharing the same private key across multiple devices to allow read-access, while enforcing mutual exclusion on writes.
-%
-%A different angle is to write applications in a way that anticipates that there might be a one-to-many mapping from users to SSB identities. Since the messages in a single feed are totally ordered but messages across multiple feeds might only be partially ordered, it is not sufficient to naively treat a set of feeds as a compound feed. Instead, the application needs to be designed from the ground up to deal with partially ordered sets of messages.
-%
-%Orthogonal to the issue of \textit{using} data from aggregated, partially ordered feeds is the issue of determining which feeds to aggregate in the first place. Settling on a common scheme for signaling compound feeds will be necessary for SSB to successfully improve on the multi-device situation.
+\subsection{Multi-Device Support}
+
+If two different devices used the same SSB identity to publish messages concurrently, this would result in two competing hash chains with the consequence that peer relays would stop propagating at least one, if not both log extensions. It is thus recommended to create a distinct keypair per device. But this leads to bad user experience, such as having to follow or block identities on all device.
+
+This could be mitigated by developing schemes that allow sharing the same private key across multiple devices to allow read-access, while enforcing mutual exclusion on writes.
+
+A different angle is to write applications in a way that anticipates that there might be a one-to-many mapping from users to SSB identities. Since the messages in a single feed are totally ordered but messages across multiple feeds might only be partially ordered, it is not sufficient to naively treat a set of feeds as a compound feed. Instead, the application needs to be designed from the ground up to deal with partially ordered sets of messages.
+
+% Orthogonal to the issue of \textit{using} data from aggregated, partially ordered feeds is the issue of determining which feeds to aggregate in the first place. Settling on a common scheme for signaling compound feeds will be necessary for SSB to successfully improve on the multi-device situation.
 
 %\subsection{Access Control}
 %
@@ -1027,7 +1028,7 @@ In this section we critically review limitations and challenges faced by identit
 
 SSB is an inherently pseudonymous system, anonymity is fundamentally incompatible with identity-centric message propagation. Furthermore, the architecture discourages ephemeral pseudonyms, favoring the creation of a rather stable network of trust to guide replication. Since all messages are signed, they are not refutable. Finally, all messages are immutable.
 
-The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The risks can be reduced by taking care that pseudonyms cannot be traced to physical identity, compartmentalizing pseudonyms, using encryption, and only giving the messages to trusted parties. Still, participation currently favors users for whom privacy issues are not critical. Consequently, applications must clearly inform users about the peculiarities of the virtual space they participate in to ensure users don't share information that might be detrimental to them later.
+The cocktail of pseudonymity, non-refutability and immutability can be a serious risk to users. Personal details could fuel harassment, political statements could justify persecution, all data could serve as the basis of (future) discrimination. The risks can be reduced by taking care that pseudonyms cannot be traced to physical identity, compartmentalizing pseudonyms, using encryption, and only giving the messages to trusted parties. Still, participation currently favors privileged users for whom privacy issues are not critical. Consequently, applications must clearly inform users about the peculiarities of the virtual space they participate in to ensure users don't share information that might be detrimental to them later.
 
 \subsection{Onboarding}
 
@@ -1092,7 +1093,7 @@ As another consequence of the subjective interpretation of data, there is no nee
 % ----------------------------------------------------------------------
 \section{Conclusions}
 
-We presented secure scuttlebutt, a fully decentralized, peer-to-peer event-sharing protocol. The core novelty is that data replication occurs at the granularity of complete append-only logs of messages by a particular author. This approach leads to a simple, yet efficient replication protocol that lends itself well to a large class of applications. By embracing \textit{eventual} delivery and subjective interpretation of data, SSB gets to sidestep common sources of complexity. A community of multiple thousand users interacting through a variety of different applications confirms the viability of the approach.
+We presented secure scuttlebutt, a fully decentralized, peer-to-peer event-sharing protocol. The core novelty is that data replication occurs at the granularity of complete, self-certifying append-only logs of messages by a particular author. This approach leads to a simple, yet efficient replication protocol that lends itself well to a large class of applications. By embracing \textit{eventual} delivery and subjective interpretation of data, SSB gets to sidestep common sources of complexity. A community of multiple thousand users interacting through a variety of different applications confirms the viability of the approach.
 
 The comparison with NDN shows that SSB's paradigm of push-based, identity-centric data transfer comes with a different set of tradeoffs than NDN's choice of pull-based, name-centric data transfer. Focussing on identities leads to challenges with respect to user privacy, but it also enables elegant, decentralized solutions to common problems with information-centric systems. Whether in the context of SSB or more generally, we believe that further study of identity-centric systems will lead to valuable insights and designs.
 
