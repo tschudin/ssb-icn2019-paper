@@ -419,24 +419,26 @@ attributes. A single message format has been defined to this end:
 {\small\begin{verbatim}
 'content': {
   'type'  : 'about',
-  'about' : target_id,
+  'about' : about_id,
   attr_name : attr_value   // multiple times
 }
 \end{verbatim}}
 
 \noindent
-The {\small\tt about} app scans all logs for all message of type {\small\tt
+The {\small\tt about} app scans all logs for messages of type {\small\tt
   `about'} and constructs a database as shown in
 Figure~\ref{fig:about}, retaining the most recent attribute assignment
-found.  To each target user ID we associate a directory where
-key/value pairs are collected on a per author basis (which is extracted
-from the message's envelope).
-
-Currently the {\small\tt name}, {\small\tt description} and {\small\tt
+found. In this database, an {\small\tt about\_id} is associated with a list of key/value pairs which are prepended by the publishing author's ID. It is left to the end user's {\small\tt `about'} application to subjectively select which of these bindings should be displayed.
+%To each target user ID we associate a directory where
+%key/value pairs are collected on a per author basis (which is extracted
+%from the message's envelope).
+%
+Currently the {\small\tt name}, textual {\small\tt description} and {\small\tt
   image} attributes are understood by most SSB user interfaces and are
 used to substitute or decorate the cryptographic ID. If {\small\tt
-  target\_id} and {\small\tt author\_id} are identical, the
-attributes are self-chosen, and otherwise given.
+  about\_id} and {\small\tt author\_id} are identical, this means that an
+attribute was self-chosen and then is usually rendered with a higher preference
+over key/value pairs assigned by others.
 
 \begin{figure}[htb]
   \includegraphics[width=0.6\columnwidth]{figs/about-ds.pdf}

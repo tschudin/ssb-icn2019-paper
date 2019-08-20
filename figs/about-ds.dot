@@ -1,5 +1,5 @@
 digraph structs {
   node [shape = record, fontname = "courier"];
   rankdir = LR;
-  about [label = "{target_id | {{author_id | {{key | val}|...}} | ...  }} | ..."];
+  about [label = "{about_id_1 | {{author_id_A | {{key | val}| ...\l}} | {author_id_B | ... \ \ \ \ } | ...\l  }} | {about_id_2 | ... \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ } | ...\l"];
 } 
