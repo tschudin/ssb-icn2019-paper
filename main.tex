@@ -1,11 +1,17 @@
 % ssb-paper-2018/main.tex
 
-\documentclass[9pt,sigconf,rewiew]{acmart}
+\documentclass[9pt,sigconf]{acmart}
 % \documentclass[sigconf]{acmart}
-\settopmatter{printfolios=true}
+% \settopmatter{printfolios=true}
 
-\title{Secure Scuttlebutt: An Identity-Centric Protocol \\
-  for Subjective and Decentralized Applications }
+\usepackage{balance}
+
+
+\title[Secure Scuttlebutt: An Identity-Centric Protocol
+       for Subjective and Decentralized Applications]{%
+  Secure Scuttlebutt: An Identity-Centric Protocol \\
+  for Subjective and Decentralized Applications
+}
 
 % \tt\small ( \today\ / last commit was \input{.git/refs/heads/master})}
 
@@ -28,10 +34,45 @@
 \affiliation{University of Basel, Switzerland}
 \email{christian.tschudin@unibas.ch}
 
-\acmConference[ICN'19]{ACM ICN'19 conference}{Sep 2019}{Hongkong}
+
+\acmConference[ICN'19]{ACM ICN'19 conference}{Sep 24-26, 2019}{Macau, Macao}
 \acmYear{2019}
+\acmDOI{10.1145/1111111.9999999}
+\acmISBN{978-1-4503-9999-9/19/09}
 \copyrightyear{2019}
 \setcopyright{rightsretained}
+
+ \begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10003033.10003034</concept_id>
+<concept_desc>Networks~Network architectures</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10011007.10010940.10010971.10010972.10010975</concept_id>
+<concept_desc>Software and its engineering~Publish-subscribe / event-based architectures</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10010520.10010521.10010537.10010540</concept_id>
+<concept_desc>Computer systems organization~Peer-to-peer architectures</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+<concept>
+<concept_id>10002951.10003152.10003161.10003162.10003414</concept_id>
+<concept_desc>Information systems~Linked lists</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[300]{Networks~Network architectures}
+\ccsdesc[300]{Software and its engineering~Publish-subscribe / event-based architectures}
+\ccsdesc[300]{Computer systems organization~Peer-to-peer architectures}
+\ccsdesc[300]{Information systems~Linked lists}
+
+\keywords{Secure Scuttlebutt, Information-Centric Networking, Push vs.~Pull}
 
 % ----------------------------------------------------------------------
 \begin{document}
@@ -65,12 +106,20 @@
 %  backup app for crypto keys using a secret sharing protocol.
 \end{abstract}
 
+%\begin{teaserfigure}
+%  \caption{Seattle Mariners at Spring Training, 2010.}
+%  \Description{Enjoying the baseball game from the third-base
+%  seats. Ichiro Suzuki preparing to bat.}
+%  \label{fig:teaser}
+%\end{teaserfigure}
+
 \maketitle
 
 
 % ----------------------------------------------------------------------
 \section{Introduction}
 
+\makebox[0pt]{\raisebox{13.9cm}[0pt][0pt]{\hspace*{1.7cm}\includegraphics[width=2cm]{figs/ssb-icon}}} %
 A simple conceptual architecture for community applications consists
 of a global data pool to which every person can contribute and where
 every person can tap into the shared data~-- data sharing being the
@@ -1102,7 +1151,8 @@ The comparison with NDN shows that SSB's paradigm of push-based, identity-centri
 \newpage
 \clearpage
 \newpage
-\bibliographystyle{acm}
+\bibliographystyle{ACM-Reference-Format}
+\balance
 \bibliography{main}
 
 \end{document}
