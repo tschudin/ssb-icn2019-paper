@@ -341,7 +341,7 @@ In SSB, each user is identified by an ed25519~\cite{bernstein2012high} keypair. 
 
 The {\em single-writer append-only logs} of SSB consist of entries (called \textit{messages}) that include a {\em backlink} in the form of a cryptographic hash of the previous message (or a special indicator for the first message of a log). The most distinguishing feature of this linked list, when compared to a regular blockchain, is that each SSB user maintains their own log and cryptographically signs all their (and only their) messages. Messages whose backlink points to a message in a different log (i.e. by a different author) are considered invalid and will be rejected by SSB relays.
 
-These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB relay checks that every message has exactly zero or one incoming backlinks. If it has more than one, the log is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log can not be appended to anymore.
+These constraints still allow creation of arbitrary trees rather than logs. To enforce log structure, each SSB relay checks that every message has exactly zero or one incoming backlinks. If it has more than one, the log is considered {\em forked}. All messages from the point of the fork onwards are ignored, the log cannot be appended to anymore.
 
 Concretely, each message, which may not exceed 4 KB, contains the following pieces of data~\cite{ssb-spec-messages}:
 
@@ -981,7 +981,7 @@ So far we have mostly restricted our presentation to those features that are imp
 
 By using a linked list of messages as the underlying datastructure for a log, a message can only be verified to be a valid element of a specific log in time linear to its sequence number. Since all previous messages need to be available for verification, this also implies linear storage overhead. More sophisticated datastructures could reduce this to logarithmic overhead, both anti-monotone binary graphs~\cite{buldas1998new} and threaded authentication trees~\cite{buldas2000optimally} would be suitable and would only require a single additional hash per message.
 
-An interesting problem in this context is how peers would indicate the subsets of a log they want to receive. Specifying individual sequence numbers works fine, but degrades to a pull-based system. Instead semantic criteria are needed, for example subscribing to only messages of certain types. Finding a general framework for specifying partial subscriptions based on semantic frameworks is an interesting task. Care must be taken that malicious peers can not silently suppress data that matches a partial subsciption, this could be done by adding additional sequence numbers for each criterium.
+An interesting problem in this context is how peers would indicate the subsets of a log they want to receive. Specifying individual sequence numbers works fine, but degrades to a pull-based system. Instead semantic criteria are needed, for example subscribing to only messages of certain types. Finding a general framework for specifying partial subscriptions based on semantic frameworks is an interesting task. Care must be taken that malicious peers cannot silently suppress data that matches a partial subsciption, this could be done by adding additional sequence numbers for each criterium.
 %
 %\subsection{Local Deletion}
 %
