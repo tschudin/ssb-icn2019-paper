@@ -903,13 +903,13 @@ satisfies the request. We suggest to explore, and we sketch here, a
 system where consumers subscribe to some data feed {\em and} keep a
 way to apply backpressure.
 
-We start by considering a long-lived interest (LLI) mechanism where
-LLIs are sent with a send credit as well as a special combination of
-feed name and sequence number. The send credit tells the upstream node
-how many packets are needed to consume the PIT entry. Feeds (=SSB
+We start by considering a long-lived interest (LLI) mechanism where LLIs are
+sent with a send credit as well as a special combination of feed name and
+sequence number. The send credit tells the upstream node how many packets
+following the sequence number are needed to consume the PIT entry.  Feeds (=SSB
 logs) consist of individual items (=backlinked log events) that can be
-requested individually via traditional NDN-pull using the feed's name
-plus the entry's sequence number. In addition, using our special LLI, a
+requested individually via traditional NDN-pull using the feed's name plus the
+entry's sequence number. In addition, using our special LLI, a
 consumer can subscribe to a feed for a limited number of packets. As
 soon as new events are available at the upstream node, data is pushed
 towards all subscribing downstream nodes, up to the expressed send
