@@ -564,8 +564,7 @@ has to be properly inserted into the application-level data structure.
 
 \begin{figure}[htb]
   \includegraphics[width=0.9\columnwidth]{figs/tangle.pdf}
-  \caption{Example of extracting application data (in form of
-    a tangle) and dealing
+  \caption{Example of extracting application data spread over multiple collaborating logs and dealing
     with not-yet-delivered data.\label{fig:tangle}}
 \end{figure}
 
@@ -573,9 +572,8 @@ A simple solution (adopted in some SSB client software) is to use the
 timestamp claimed by the author of the post, and in this case one can
 reuse the existing time-sorted list and insert the new post. However,
 because an author could lie about the timestamp, the reduce function
-should do a topological sort of the tangle based on the causality relationship with
-other posts and their replies. Insertion into the dependency graph may
-or may not lead to having to rerun the sort on the whole graph of
+should do a topological sort  based on the causality relationship with
+other posts and their replies, which form a directed acyclic graph. Insertion into the dependency graph may or may not lead to having to rerun the sort on the whole graph of
 postings. Clearly, the lack of a central server hosting the reference
 list of posts and being able to record a post's submission time, leads
 to more complex client software that must prepare for and defend
@@ -890,8 +888,8 @@ would not benefit from SSB's social graph replication mindset.
 While in the previous sections we tried to layer the two ICN network
 architectures, NDN and SSB, on top of each other and with
 unsatisfactory results, we explore in this section the potential of
-bringing only a subset of SSB’s functionality into NDN. The focus is
-on SSB’s append-only log which seems to enable a ``controlled push’’
+bringing only a subset of SSB's functionality into NDN. The focus is
+on SSB's append-only log which seems to enable a "controlled push"
 service, answering an often-heard request towards NDN from
 distributed systems developers. Other elements of SSB like the
 symmetry between producers and consumers, or the use of the social
@@ -908,15 +906,15 @@ way to apply backpressure.
 We start by considering a long-lived interest (LLI) mechanism where
 LLIs are sent with a send credit as well as a special combination of
 feed name and sequence number. The send credit tells the upstream node
-how much packets are needed to consume the PIT entry. Feeds (=SSB
+how many packets are needed to consume the PIT entry. Feeds (=SSB
 logs) consist of individual items (=backlinked log events) that can be
-requested individually via traditional NDN-pull using the feed’s name
-plus the entry’s sequence number. Now, and using our special LLI, a
+requested individually via traditional NDN-pull using the feed's name
+plus the entry's sequence number. In addition, using our special LLI, a
 consumer can subscribe to a feed for a limited number of packets. As
 soon as new events are available at the upstream node, data is pushed
 towards all subscribing downstream nodes, up to the expressed send
 credit. Forwarding nodes store (cache) the entries of a feed and check
-that new events correctly extend the local copy of the feed\footnote{
+that new events correctly extend the local copy of the feed.\footnote{
   Asserting log integrity involves more than checking an event's
   signature: the new event's sequence number must be in order, the
   backlink must correctly reference the previous event, and the log
@@ -930,17 +928,18 @@ We call this a controlled push for two reasons. First, consumers
 guard against buffer overrun by expressing a send credit (which
 forwarding nodes can aggregate and adjust according to the available
 cache memory): in case of setting all send credit values to one we get
-NDN’s classic pull. Second, SSB’s cryptographically secured
-append-only logs impose a single feed source: The network benefits
-from this information as it has to only maintain limited ``frontier
-information’’, very similar in size with current PIT state.
+NDN's classic pull. Second, SSB's cryptographically secured
+append-only logs impose a single feed source: the network benefits
+from this information because only a limited number of the most recent 
+items need to be cached to serve most consumers. The memory usage 
+shall be similar to the current PIT state.
 
 The resulting network-level service is attractive for ICN application
 writers in several ways: once requested, asynchronous data is pushed
 with zero delay; all events are ordered and are checked for their
-integrity (single-source log); consumer anonymity and no need for a
-routable prefix are preserved. Additional benefits exist due to the
-network being aware of the log’s semantic, for example being able to
+integrity (single-source log); consumers stay anonymous and
+routable prefix are still unnecessary. Additional benefits exist due to the
+network being aware of the log's semantic, for example being able to
 request in-network retransmission when observing missing log entries,
 instead of having to wait for the PIT entry to time-out.
 
@@ -948,8 +947,8 @@ While unfortunately some properties of SSB were lost during such an
 import of push semantics into NDN, we see interesting research
 opportunities along the sketched path where a data-structure aware
 network substrate can provide advanced and potentially dangerous
-services like push {\em because} of that data structure’s property. To
-us, the price to pay in terms of PIT state, seems minimal, and the
+services like push {\em because} of that data structure's property. To
+us, the price to pay in terms of PIT state, seems minimal, and
 worthy for having native push semantics in NDN.
 
 %From the prior sections, it becomes clear that push-based streams are more general than single data items, and hierarchical names are more general than flat ones. We thus briefly sketch a system that combines the two in order to bring some of SSB's benefits to layer 3.
