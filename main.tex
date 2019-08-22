@@ -919,11 +919,9 @@ that new events correctly extend the local copy of the feed.\footnote{
   Asserting log integrity involves more than checking an event's
   signature: the new event's sequence number must be in order, the
   backlink must correctly reference the previous event, and the log
-  should not be forked. There is a considerable amount of insights in
-  the SSB community about ways to address especially the last
-  challenge, including ongoing work for adding additional backlinks
-  that permit to validate single events without access to the totality
-  of a feed.}
+  should not be forked. A nontrivial problem is how nodes should react
+  forked logs: ideally, the information that a fork occured should be
+  propagated. We leave this problem as future work.}
 
 We call this a controlled push for two reasons. First, consumers
 guard against buffer overrun by expressing a send credit (which
