@@ -106,20 +106,12 @@
 %  backup app for crypto keys using a secret sharing protocol.
 \end{abstract}
 
-%\begin{teaserfigure}
-%  \caption{Seattle Mariners at Spring Training, 2010.}
-%  \Description{Enjoying the baseball game from the third-base
-%  seats. Ichiro Suzuki preparing to bat.}
-%  \label{fig:teaser}
-%\end{teaserfigure}
-
 \maketitle
 
 
 % ----------------------------------------------------------------------
 \section{Introduction}
 
-\makebox[0pt]{\raisebox{13.9cm}[0pt][0pt]{\hspace*{1.7cm}\includegraphics[width=2cm]{figs/ssb-icon}}} %
 A simple conceptual architecture for community applications consists
 of a global data pool to which every person can contribute and where
 every person can tap into the shared data~-- data sharing being the
@@ -892,8 +884,73 @@ would not benefit from SSB's social graph replication mindset.
 \subsection{Combining NDN and SSB}
 \label{ssect:combining}
 
-\fbox{\em The text for this section is under internal discussion.}\\
-\fbox{\em It will be provided by Thursday early morning, August 22, 2019}
+%\fbox{\em The text for this section is under internal discussion.}\\
+%\fbox{\em It will be provided by Thursday early morning, August 22, 2019}
+
+While in the previous sections we tried to layer the two ICN network
+architectures, NDN and SSB, on top of each other and with
+unsatisfactory results, we explore in this section the potential of
+bringing only a subset of SSB’s functionality into NDN. The focus is
+on SSB’s append-only log which seems to enable a ``controlled push’’
+service, answering an often-heard request towards NDN from
+distributed systems developers. Other elements of SSB like the
+symmetry between producers and consumers, or the use of the social
+graph to inform the routing, are left out.
+
+A core critique against network-level push is that a producer can
+flood all of its consumers: letting consumers ask for one individual
+data item with an interest packet effectively blocks any flooding
+attack because the PIT state is consumed by the first data packet that
+satisfies the request. We suggest to explore, and we sketch here, a
+system where consumers subscribe to some data feed {\em and} keep a
+way to apply backpressure.
+
+We start by considering a long-lived interest (LLI) mechanism where
+LLIs are sent with a send credit as well as a special combination of
+feed name and sequence number. The send credit tells the upstream node
+how much packets are needed to consume the PIT entry. Feeds (=SSB
+logs) consist of individual items (=backlinked log events) that can be
+requested individually via traditional NDN-pull using the feed’s name
+plus the entry’s sequence number. Now, and using our special LLI, a
+consumer can subscribe to a feed for a limited number of packets. As
+soon as new events are available at the upstream node, data is pushed
+towards all subscribing downstream nodes, up to the expressed send
+credit. Forwarding nodes store (cache) the entries of a feed and check
+that new events correctly extend the local copy of the feed\footnote{
+  Asserting log integrity involves more than checking an event's
+  signature: the new event's sequence number must be in order, the
+  backlink must correctly reference the previous event, and the log
+  should not be forked. There is a considerable amount of insights in
+  the SSB community about ways to address especially the last
+  challenge, including ongoing work for adding additional backlinks
+  that permit to validate single events without access to the totality
+  of a feed.}
+
+We call this a controlled push for two reasons. First, consumers
+guard against buffer overrun by expressing a send credit (which
+forwarding nodes can aggregate and adjust according to the available
+cache memory): in case of setting all send credit values to one we get
+NDN’s classic pull. Second, SSB’s cryptographically secured
+append-only logs impose a single feed source: The network benefits
+from this information as it has to only maintain limited ``frontier
+information’’, very similar in size with current PIT state.
+
+The resulting network-level service is attractive for ICN application
+writers in several ways: once requested, asynchronous data is pushed
+with zero delay; all events are ordered and are checked for their
+integrity (single-source log); consumer anonymity and no need for a
+routable prefix are preserved. Additional benefits exist due to the
+network being aware of the log’s semantic, for example being able to
+request in-network retransmission when observing missing log entries,
+instead of having to wait for the PIT entry to time-out.
+
+While unfortunately some properties of SSB were lost during such an
+import of push semantics into NDN, we see interesting research
+opportunities along the sketched path where a data-structure aware
+network substrate can provide advanced and potentially dangerous
+services like push {\em because} of that data structure’s property. To
+us, the price to pay in terms of PIT state, seems minimal, and the
+worthy for having native push semantics in NDN.
 
 %From the prior sections, it becomes clear that push-based streams are more general than single data items, and hierarchical names are more general than flat ones. We thus briefly sketch a system that combines the two in order to bring some of SSB's benefits to layer 3.
 
@@ -1156,11 +1213,11 @@ We presented Secure Scuttlebutt, a fully decentralized, peer-to-peer event-shari
 The comparison with NDN shows that SSB's paradigm of push-based, identity-centric data transfer comes with a different set of tradeoffs than NDN's choice of pull-based, name-centric data transfer. Focussing on identities leads to challenges with respect to user privacy, but it also enables elegant, decentralized solutions to common problems with information-centric systems. Whether in the context of SSB or more generally, we believe that further study of identity-centric systems will lead to valuable insights and designs.
 
 % ----------------------------------------------------------------------
-\newpage
-\clearpage
-\newpage
+%\newpage
+%\clearpage
+%\newpage
 \bibliographystyle{ACM-Reference-Format}
-\balance
+% \balance
 \bibliography{main}
 
 \end{document}
