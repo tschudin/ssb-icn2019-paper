@@ -901,7 +901,7 @@ flood all of its consumers: letting consumers ask for one individual
 data item with an interest packet effectively blocks any flooding
 attack because the PIT state is consumed by the first data packet that
 satisfies the request. We sketch - and suggest to explore - a
-system where consumers subscribe to some data feed {\em and} keep a
+system where consumers subscribe to some data stream {\em and} keep a
 way to apply backpressure. To this end, we map SSB's log replication semantics
 to an NDN-style, packet-level protocol design.
 
@@ -916,7 +916,7 @@ credit. Forwarding nodes store (cache) the items of a feed and check
 that new events correctly extend the local copy of the feed.\footnote{
   Asserting feed integrity involves more than just checking an item's
   signature: the new item's sequence number must be in order, the
-  backlink must correctly reference the previous event, and the log
+  backlink must correctly reference the previous item, and the feed
   should not be forked. A nontrivial problem is how nodes should react
   to forked feeds: ideally, the information that a fork occurred should be
   propagated. We leave this open for future work.}
