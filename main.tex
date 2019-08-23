@@ -472,7 +472,7 @@ logs. It provides an encoding of repositories in SSB logs, a bridge to
 interoperate with git repositories, and a web-based viewer to browse
 repositories. The object model of Git~\cite{chacon2014pro} has a similar
 structure to SSB's logs. Other git operations, such as creating repository, are
-all SSB messages. Since any user can independently update the \textit{same} repository, as defined by its creation message, consensus on the "official" master branch and its latest commit is enforced
+all SSB messages. Since any user can independently update the \textit{same} repository, as defined by its creation message, consensus on the ``official'' master branch and its latest commit is enforced
 through social coordination. In case of concurrent updates to the same branch
 in the same repository~\cite{git-ssb-push-conflict}, referencing both concurrent
 updates in a later merge commit in effect resolves
@@ -574,7 +574,7 @@ reuse the existing time-sorted list and insert the new post. However,
 because an author could lie about the timestamp, the reduce function
 should do a topological sort  based on the causality relationship with
 other posts and their replies, which form a directed acyclic graph.
-\footnote{Writers can facilitate the causal ordering by explicitly referring to the most recent messages in other logs they were aware of at the time of writing, regardless of whether the content was directly relevant to their own message. We call the graphs resulting from this pattern "tangles".} Insertion into the dependency graph may or may not lead to having to rerun the sort on the whole graph of
+\footnote{Writers can facilitate the causal ordering by explicitly referring to the most recent messages in other logs they were aware of at the time of writing, regardless of whether the content was directly relevant to their own message. We call the graphs resulting from this pattern ``tangles''.} Insertion into the dependency graph may or may not lead to having to rerun the sort on the whole graph of
 postings. Clearly, the lack of a central server hosting the reference
 list of posts and being able to record a post's submission time, leads
 to more complex client software that must prepare for and defend
@@ -762,7 +762,7 @@ Emulating SSB over NDN means emulating a push-based system over a pull-based one
 
 Implementing push with the pure request-reply model of NDN comes down to two basic options~\cite{carzaniga2011pubsub}: the producer could send an Interest to the consumer, to signal that the consumer should itself issue an interest in the newly available data. This approach incurs a high latency penalty and leaves a trail of in-network state.
 
-The other approach is regular (per-item) polling: the consumer periodically signals interest for some data the producer may or may not have created yet. In its simplest form, this can be done by publishing data under a name that ends with a sequence number that is incremented with each produced piece of data. Under this model, the consumer can decide how many items into the "future" to poll for simultaneously. This whole process can be abstracted over with a consumer-side library~\cite{moiseenko2014consumer,sardara2018transport}.
+The other approach is regular (per-item) polling: the consumer periodically signals interest for some data the producer may or may not have created yet. In its simplest form, this can be done by publishing data under a name that ends with a sequence number that is incremented with each produced piece of data. Under this model, the consumer can decide how many items into the ``future'' to poll for simultaneously. This whole process can be abstracted over with a consumer-side library~\cite{moiseenko2014consumer,sardara2018transport}.
 
 With the current design of NDN, polling is resource intensive. A natural extension of per-item polling is the inclusion of long-lived or persistent Interests~\cite{moll2018persistent}. But even then, a pull implementation would be inefficient: polling ahead for multiple items effectively amounts to controlling back-pressure through a sliding window, comparable to TCP. But unlike TCP, this window could only be manipulated by one item per (interest) packet. Introducing some form of sequence number arithmetic to increase efficiency would necessitate to drop the concept of purely opaque names.
 
@@ -890,7 +890,7 @@ While in the previous sections we tried to layer the two ICN network
 architectures, NDN and SSB, on top of each other to only
 unsatisfactory results, we explore the potential of bringing only a
 subset of SSB's functionality into NDN in this section. The focus is
-on SSB's append-only log which enables a "controlled push"
+on SSB's append-only log which enables a ``controlled push''
 service, answering an often-heard request towards NDN from
 distributed systems developers. Other elements of SSB like the
 symmetry between producers and consumers, or the use of the social
