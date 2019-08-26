@@ -2,6 +2,11 @@
 
 \documentclass[9pt,sigconf]{acmart}
 
+% \usepackage{showframe}
+
+% XXX there are brittle hacks to render the first page layeout inside
+% the given margins (when showing the CC-BY-SA logo and text)
+
 \title[Secure Scuttlebutt: An Identity-Centric Protocol
        for Subjective and Decentralized Applications]{%
   Secure Scuttlebutt: An Identity-Centric Protocol \\
@@ -24,32 +29,35 @@
 \affiliation{University of Basel, Switzerland}
 \email{christian.tschudin@unibas.ch}
 
-
-\acmConference[ICN'19]{ACM ICN'19 conference}{Sep 24-26, 2019}{Macau, Macao}
 \acmYear{2019}
-\acmDOI{10.1145/1111111.9999999}
-\acmISBN{978-1-4503-9999-9/19/09}
+\acmConference[ICN '19]{6th ACM Conference on Information-CentricNetworking}{September 24--26, 2019}{Macau, Macao}
+\acmBooktitle{6th ACM Conference on Information-Centric Networking (ICN '19),September 24--26, 2019, Macau, Macao}
+\acmDOI{10.1145/3357150.3357396}
+\acmISBN{978-1-4503-6970-1/19/09}
 
 \copyrightyear{2019}
 \setcopyright{rightsretained}
 \renewcommand{\copyrightpermissionfootnoterule}{%
+  \vspace*{-2ex} % XXX hack
   \kern-3pt\hrule width \columnwidth \kern 2.6pt%
   \noindent%
-  \includegraphics[width=0.25\columnwidth]{figs/creative-commons-by_nc_sa_4_0.pdf}
-  \hfill
+  \includegraphics[width=0.25\columnwidth]{figs/creative-commons-by_sa_4_0.pdf}
+  \hspace*{-2pt}
   \begin{minipage}[b]{0.74\columnwidth}
     \footnotesize
     For any reuse or distribution, you must make clear to
     others the license terms
     of this work. The best way to do this is with a link to the web page
-    \hfill{\tt\tiny http://creativecommons.org/licenses/by-nc-sa/4.0/%
-    \hspace*{-1pt}}
+    http://creativecommons.org/licenses/by-sa/4.0/%
+    \hspace*{-1pt}
     \vspace*{-1pt}
-  \end{minipage}%\kern 0.5pt
-  \vspace*{2pt}
+  \end{minipage}%
+  \vspace*{2pt}%
+  \kern-3pt\hrule width \columnwidth \kern 2.6pt%
+  \vspace*{-2pt}
 }
 
- \begin{CCSXML}
+\begin{CCSXML}
 <ccs2012>
 <concept>
 <concept_id>10003033.10003034</concept_id>
@@ -110,10 +118,17 @@ purpose of such applications. This model still is valid if one adds
 access control to the picture, either tied to the data (encryption
 giving access to content only to entitled holders of the decryption
 keys) or encrypting data in transit (login and TLS). Facebook and
-other centrally organized social app service providers fit well under
+%
+% XXX hack to make the additional CC license box fit into the ACM footer
+\makebox[\columnwidth][s]{%
+  other centrally organized social app service providers fit well under
+}\\
+\ 
+
+\noindent
 this global data pool model but have been strongly criticized for
-abusing their central provisioning position.  The ``decentralized web
-movement''~\cite{decent-2018-aug} is the most visible technical
+abusing their central provisioning position.  The ``decentralized
+web movement''~\cite{decent-2018-aug} is the most visible technical
 response to this critique, pointing out implementation alternatives.
 
 One of these alternatives is a project called Secure Scuttlebutt (SSB)
@@ -152,7 +167,11 @@ a solid foundation for implementing many classes of applications.
         A} follows {\em C}, {\em A} will get {\em C's} log {\em c} via
       {\em B:} new content is pushed directly if possible and through
       intermediary friends if necessary.}}
+  \Description{Explaining SSB as an ``Internet of Identities'' where
+    humans connect to each other and replicate their friends' content.}
   \label{fig:net-of-people}
+  % XXX hack to reduce space to next section title
+  \vspace*{-2ex}
 \end{figure}
 
 
@@ -429,6 +448,7 @@ and how to compute hashes to address messages and blobs. This is the
 \begin{figure}[htb]
   \includegraphics[width=0.9\columnwidth]{figs/ssb-waist.pdf}
   \caption{Secure Scuttlebutt's protocol stack.}
+  \Description{Secure Scuttlebutt's protocol stack.}
   \label{fig:waist}
 \end{figure}
 
@@ -496,6 +516,7 @@ others.
   \includegraphics[width=0.6\columnwidth]{figs/about-ds.pdf}
   \caption{SSB's user directory data structure (after extraction from
     the logs).}
+  \Description{SSB's user directory data structure shown as a record.}
   \label{fig:about}
 \end{figure}
 
@@ -619,6 +640,7 @@ application-level data structure.
   \includegraphics[width=0.9\columnwidth]{figs/tangle.pdf}
   \caption{Example of extracting application data spread over multiple
     collaborating logs and dealing with not-yet-delivered data.}
+  \Description{Extracting a discussion thread from multiple collaborating logs.}
   \label{fig:tangle}
 \end{figure}
 
@@ -786,7 +808,10 @@ next sections and illustrated in Figure~\ref{fig:ssb-and-ndn}.
 \begin{figure}[htb]
   \raggedright
   \includegraphics[width=0.9\columnwidth]{figs/ssb-and-ndn.pdf}
-  \caption{\label{fig:ssb-and-ndn}Three different layerings of SSB and NDN.}
+  \caption{Three different layerings of SSB and NDN.}
+  \Description{The three different combinations of SSB and NDN
+    networking elements, as separately discussed in the text.}
+  \label{fig:ssb-and-ndn}
 \end{figure}
 
 \subsection{SSB over NDN}
